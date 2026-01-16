@@ -66,7 +66,7 @@ let myLet = 20;
 ## 4. Visualizing Scope
 Here is a diagram showing how nested scopes interact:
 
-![JavaScript Scope Diagram](/images/js-scope.png)
+![JavaScript Scope Diagram](/images/js_scope_diagram_1768555886603.png)
 
 > [!TIP]
 > Always prefer `const` by default. Only use `let` if you know the value must change, and avoid `var` in modern development to prevent scoping surprises.

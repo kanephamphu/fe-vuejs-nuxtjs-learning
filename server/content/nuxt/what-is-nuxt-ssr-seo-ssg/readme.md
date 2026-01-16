@@ -41,7 +41,7 @@ useSeoMeta({
 ## 3. The Nuxt Lifecycle (Server to Client)
 Understanding how code travels from your server to your user's screen is vital.
 
-![Nuxt SSR Lifecycle Diagram](/images/nuxt-lifecycle.png)
+![Nuxt SSR Lifecycle Diagram](/images/nuxt_ssr_lifecycle_diagram_1768556054996.png)
 
 ---
 

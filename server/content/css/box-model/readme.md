@@ -43,7 +43,7 @@ The actual rendered width is exactly **200px**.
 ## 3. Visualizing the Box Model
 The diagram below shows the layer relationship and how `box-sizing` affects calculations.
 
-![CSS Box Model Diagram](/images/css-box-model.png)
+![CSS Box Model Diagram](/images/css_box_model_diagram_1768555974904.png)
 
 ---
 

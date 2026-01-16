@@ -40,7 +40,7 @@ state.age = 4;
 ## 3. How it Works (Proxies)
 Vue 3 uses **ES6 Proxies** to "intercept" operations on your data.
 
-![Vue Reactivity Proxy Diagram](/images/vue-reactivity.png)
+![Vue Reactivity Proxy Diagram](/images/vue_reactivity_proxy_diagram_1768556012681.png)
 
 ---
 

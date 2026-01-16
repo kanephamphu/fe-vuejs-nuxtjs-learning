@@ -47,7 +47,7 @@ The `newUser` object is now perfectly validated. If you try to add `state: "acti
 ## 3. How it Works (Transpilation)
 Browsers cannot run TypeScript. It must be converted into JavaScript first.
 
-![TS Type System Diagram](/images/ts-types.png)
+![TypeScript Type System Diagram](/images/ts_type_system_diagram_1768556089387.png)
 
 ---
 

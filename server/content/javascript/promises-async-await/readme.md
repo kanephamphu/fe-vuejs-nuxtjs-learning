@@ -53,7 +53,7 @@ Cleanup done.
 ## 3. The Event Loop & Microtasks
 Promises are handled in the **Microtask Queue**, which has higher priority than the standard **Task Queue** (like `setTimeout`).
 
-![Promises & Event Loop Diagram](/images/js-event-loop.png)
+![Promises & Event Loop Diagram](/images/js_promises_event_loop_diagram_1768555928473.png)
 
 ---
 

@@ -35,7 +35,7 @@ console.log("4: End");
 ## 3. Visualizing the Loop
 The Event Loop constantly checks if the **Call Stack** is empty. If it is, it first drains the **Microtask Queue**, then takes one task from the **Task Queue**.
 
-![Event Loop Diagram](file:///C:/Users/ptai/.gemini/antigravity/brain/737194ec-538b-4679-b8b6-55b2472cf8bf/js_promises_event_loop_diagram_1768555928473.png)
+![Event Loop Diagram](/images/js_promises_event_loop_diagram_1768555928473.png)
 
 > [!CAUTION]
 > Don't block the stack! Heavy calculations (like processing a huge image) in the main thread will freeze your entire website because the Event Loop won't be able to process any new tasks.

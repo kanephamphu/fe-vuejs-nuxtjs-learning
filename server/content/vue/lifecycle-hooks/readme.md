@@ -32,7 +32,7 @@ The user list is populated immediately after the page finishes loading, providin
 ## 3. Visualizing the Lifecycle
 Understanding the exact order of hooks is essential for debugging timing-related issues.
 
-![Vue Lifecycle Hooks Diagram](/images/vue-lifecycle.png)
+![Vue Lifecycle Hooks Diagram](/images/vue_lifecycle_diagram_1768556691522.png)
 
 > [!CAUTION]
 > Do not use `onMounted` to try and access a child component's DOM nodes if that child is hidden behind a `v-if` that is currently false. The child must be rendered for its hooks to fire.
