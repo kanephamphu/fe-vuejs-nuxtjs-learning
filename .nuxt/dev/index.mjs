@@ -3,14 +3,11 @@ import { Server } from 'node:http';
 import path, { resolve, dirname, join } from 'node:path';
 import nodeCrypto from 'node:crypto';
 import { parentPort, threadId } from 'node:worker_threads';
-import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, getCookie, getQuery as getQuery$1, readBody, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, setCookie, deleteCookie, getResponseStatusText } from 'file://D:/Project/Training/VueJS/node_modules/h3/dist/index.mjs';
+import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, getCookie, deleteCookie, getQuery as getQuery$1, readBody, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, setCookie, getResponseStatusText } from 'file://D:/Project/Training/VueJS/node_modules/h3/dist/index.mjs';
 import { escapeHtml } from 'file://D:/Project/Training/VueJS/node_modules/@vue/shared/dist/shared.cjs.js';
 import { sql, eq, and } from 'file://D:/Project/Training/VueJS/node_modules/drizzle-orm/index.js';
 import bcrypt from 'file://D:/Project/Training/VueJS/node_modules/bcrypt/bcrypt.js';
 import fs, { promises } from 'node:fs';
-import { drizzle } from 'file://D:/Project/Training/VueJS/node_modules/drizzle-orm/better-sqlite3/index.js';
-import Database from 'file://D:/Project/Training/VueJS/node_modules/better-sqlite3/lib/index.js';
-import { sqliteTable, integer, text } from 'file://D:/Project/Training/VueJS/node_modules/drizzle-orm/sqlite-core/index.js';
 import { createRenderer, getRequestDependencies, getPreloadLinks, getPrefetchLinks } from 'file://D:/Project/Training/VueJS/node_modules/vue-bundle-renderer/dist/runtime.mjs';
 import { parseURL, withoutBase, joinURL, getQuery, withQuery, withTrailingSlash, decodePath, withLeadingSlash, withoutTrailingSlash, joinRelativeURL } from 'file://D:/Project/Training/VueJS/node_modules/ufo/dist/index.mjs';
 import process$1 from 'node:process';
@@ -41,6 +38,9 @@ import { captureRawStackTrace, parseRawStackTrace } from 'file://D:/Project/Trai
 import { fileURLToPath } from 'node:url';
 import { dirname as dirname$1, resolve as resolve$1 } from 'file://D:/Project/Training/VueJS/node_modules/pathe/dist/index.mjs';
 import jwt from 'file://D:/Project/Training/VueJS/node_modules/jsonwebtoken/index.js';
+import { drizzle } from 'file://D:/Project/Training/VueJS/node_modules/drizzle-orm/better-sqlite3/index.js';
+import Database from 'file://D:/Project/Training/VueJS/node_modules/better-sqlite3/lib/index.js';
+import { sqliteTable, integer, text } from 'file://D:/Project/Training/VueJS/node_modules/drizzle-orm/sqlite-core/index.js';
 import { walkResolver } from 'file://D:/Project/Training/VueJS/node_modules/unhead/dist/utils.mjs';
 
 const serverAssets = [{"baseName":"server","dir":"D:/Project/Training/VueJS/server/assets"}];
@@ -641,16 +641,6 @@ const _inlineRuntimeConfig = {
     "routeRules": {
       "/__nuxt_error": {
         "cache": false
-      },
-      "/_nuxt/builds/meta/**": {
-        "headers": {
-          "cache-control": "public, max-age=31536000, immutable"
-        }
-      },
-      "/_nuxt/builds/**": {
-        "headers": {
-          "cache-control": "public, max-age=1, immutable"
-        }
       }
     }
   },
@@ -1458,14 +1448,29 @@ const plugins = [
 _0Y41XDPzSOF98SzvIYxubvjo4s0MSoYKyrS7BIuC8
 ];
 
-const assets = {};
+const assets = {
+  "/index.mjs": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"1a27c-mxugrsjaJ/wxrjkKWL7yrUnnHI8\"",
+    "mtime": "2026-01-16T09:15:11.152Z",
+    "size": 107132,
+    "path": "index.mjs"
+  },
+  "/index.mjs.map": {
+    "type": "application/json",
+    "etag": "\"63a02-x29EYM3mGcVwuY3lDq/x+Kjt0fI\"",
+    "mtime": "2026-01-16T09:15:11.152Z",
+    "size": 408066,
+    "path": "index.mjs.map"
+  }
+};
 
 function readAsset (id) {
   const serverDir = dirname$1(fileURLToPath(globalThis._importMeta_.url));
   return promises.readFile(resolve$1(serverDir, assets[id].path))
 }
 
-const publicAssetBases = {"/_nuxt/builds/meta/":{"maxAge":31536000},"/_nuxt/builds/":{"maxAge":1}};
+const publicAssetBases = {};
 
 function isPublicAssetURL(id = '') {
   if (assets[id]) {
@@ -1560,12 +1565,68 @@ const verifyToken = (token) => {
   }
 };
 
+const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email").notNull().unique(),
+  password: text("password").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`)
+});
+const lessons = sqliteTable("lessons", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  module: text("module").notNull(),
+  // 'vue' or 'nuxt'
+  topic: text("topic").notNull(),
+  // e.g. 'fundamentals'
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  content: text("content").notNull(),
+  // Markdown content
+  practiceContent: text("practice_content"),
+  // New field for practice instructions
+  complexity: text("complexity")
+  // 'beginner', 'intermediate', 'advanced'
+});
+const exercises = sqliteTable("exercises", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  lessonId: integer("lesson_id").references(() => lessons.id).notNull(),
+  instructions: text("instructions").notNull(),
+  // This will be used for the exercise markdown
+  starterCode: text("starter_code").notNull(),
+  solutionCode: text("solution_code").notNull()
+});
+const userProgress = sqliteTable("user_progress", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  lessonId: integer("lesson_id").references(() => lessons.id).notNull(),
+  status: text("status").notNull(),
+  // 'completed', 'in_progress'
+  practiceCompleted: integer("practice_completed", { mode: "boolean" }).default(false),
+  exerciseCompleted: integer("exercise_completed", { mode: "boolean" }).default(false),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`)
+});
+
+const schema = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  exercises: exercises,
+  lessons: lessons,
+  userProgress: userProgress,
+  users: users
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const sqlite = new Database("data.db");
+const db = drizzle(sqlite, { schema });
+
 const _AH0gJK = defineEventHandler(async (event) => {
   const token = getCookie(event, "auth_token");
   if (token) {
     const payload = verifyToken(token);
     if (payload) {
-      event.context.user = payload;
+      const user = await db.select().from(users).where(eq(users.id, payload.id)).get();
+      if (user) {
+        event.context.user = payload;
+      } else {
+        deleteCookie(event, "auth_token");
+      }
     }
   }
 });
@@ -2245,52 +2306,6 @@ const styles$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   default: styles
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`)
-});
-const lessons = sqliteTable("lessons", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  module: text("module").notNull(),
-  // 'vue' or 'nuxt'
-  topic: text("topic").notNull(),
-  // e.g. 'fundamentals'
-  title: text("title").notNull(),
-  slug: text("slug").notNull().unique(),
-  content: text("content").notNull(),
-  // Markdown content
-  complexity: text("complexity")
-  // 'beginner', 'intermediate', 'advanced'
-});
-const exercises = sqliteTable("exercises", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  lessonId: integer("lesson_id").references(() => lessons.id).notNull(),
-  instructions: text("instructions").notNull(),
-  starterCode: text("starter_code").notNull(),
-  solutionCode: text("solution_code").notNull()
-});
-const userProgress = sqliteTable("user_progress", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  lessonId: integer("lesson_id").references(() => lessons.id).notNull(),
-  status: text("status").notNull(),
-  // 'completed', 'in_progress'
-  updatedAt: integer("updated_at", { mode: "timestamp" }).default(sql`CURRENT_TIMESTAMP`)
-});
-
-const schema = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  exercises: exercises,
-  lessons: lessons,
-  userProgress: userProgress,
-  users: users
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const sqlite = new Database("data.db");
-const db = drizzle(sqlite, { schema });
-
 const login_post = defineEventHandler(async (event) => {
   const body = await readBody(event);
   const { email, password } = body;
@@ -2392,7 +2407,12 @@ const _slug__get = defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: "Lesson not found" });
   }
   const exercise = await db.select().from(exercises).where(eq(exercises.lessonId, lesson.id)).get();
-  return { ...lesson, exercise };
+  const user = event.context.user;
+  let progress = null;
+  if (user) {
+    progress = await db.select().from(userProgress).where(and(eq(userProgress.userId, user.id), eq(userProgress.lessonId, lesson.id))).get();
+  }
+  return { ...lesson, exercise, progress };
 });
 
 const _slug__get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -2428,68 +2448,135 @@ const seed_get = defineEventHandler(async () => {
   try {
     const modules = {
       javascript: [
-        { title: "Variables and Scope", topic: "Day 1: Javascript", type: "Concept/Self-learning" },
-        { title: "Primitive Data Types", topic: "Day 1: Javascript", type: "Concept/Self-learning" },
-        { title: "Operators and Logic", topic: "Day 1: Javascript", type: "Concept/Self-learning" },
-        { title: "Iterating with Loops", topic: "Day 1: Javascript", type: "Concept/Self-learning" },
-        { title: "Functions", topic: "Day 1: Javascript", type: "Concept/Self-learning" },
-        { title: "Functional Concepts", topic: "Day 1: Javascript", type: "Concept/Self-learning" },
-        { title: "Concurrency", topic: "Day 1: Javascript", type: "Concept/Self-learning" },
-        { title: "The Event Loop", topic: "Day 1: Javascript", type: "Concept/Self-learning" },
-        { title: "Daily Assignment", topic: "Day 1: Javascript", type: "Assignment/Lab" },
-        { title: "Daily Quick-test", topic: "Day 1: Javascript", type: "Test/Quiz" }
+        { title: "Variables and Scope", topic: "Day 1: Javascript", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Primitive Data Types", topic: "Day 1: Javascript", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Operators and Logic", topic: "Day 1: Javascript", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Iterating with Loops", topic: "Day 1: Javascript", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Functions", topic: "Day 1: Javascript", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Functional Concepts", topic: "Day 1: Javascript", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Concurrency", topic: "Day 1: Javascript", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "The Event Loop", topic: "Day 1: Javascript", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Promises & async/await", topic: "Day 1: Javascript", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Daily Assignment", topic: "Day 1: Javascript", type: "Assignment/Lab", level: "intermediate" },
+        { title: "Daily Quick-test", topic: "Day 1: Javascript", type: "Test/Quiz", level: "beginner" }
       ],
       typescript: [
-        { title: "Basic Annotations", topic: "Day 2: TypeScript", type: "Concept/Self-learning" },
-        { title: "Advanced Type Definitions", topic: "Day 2: TypeScript", type: "Concept/Self-learning" },
-        { title: "Type Logic", topic: "Day 2: TypeScript", type: "Concept/Self-learning" },
-        { title: "Configuration", topic: "Day 2: TypeScript", type: "Concept/Self-learning" },
-        { title: "Object-Oriented Programming (OOP)", topic: "Day 2: TypeScript", type: "Concept/Self-learning" },
-        { title: "Generics", topic: "Day 2: TypeScript", type: "Concept/Self-learning" },
-        { title: "Utility Types", topic: "Day 2: TypeScript", type: "Concept/Self-learning" },
-        { title: "Daily Assignment", topic: "Day 2: TypeScript", type: "Assignment/Lab" },
-        { title: "Daily Quick-test", topic: "Day 2: TypeScript", type: "Test/Quiz" }
+        { title: "Basic Annotations", topic: "Day 2: TypeScript", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Advanced Type Definitions", topic: "Day 2: TypeScript", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Type Logic", topic: "Day 2: TypeScript", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Configuration", topic: "Day 2: TypeScript", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Object-Oriented Programming (OOP)", topic: "Day 2: TypeScript", type: "Concept/Self-learning", level: "advanced" },
+        { title: "Generics", topic: "Day 2: TypeScript", type: "Concept/Self-learning", level: "advanced" },
+        { title: "Utility Types", topic: "Day 2: TypeScript", type: "Concept/Self-learning", level: "advanced" },
+        { title: "Daily Assignment", topic: "Day 2: TypeScript", type: "Assignment/Lab", level: "advanced" },
+        { title: "Daily Quick-test", topic: "Day 2: TypeScript", type: "Test/Quiz", level: "intermediate" }
       ],
       css: [
-        { title: "Defining Layout", topic: "Day 3: CSS", type: "Concept/Self-learning" },
-        { title: "Applying Styles", topic: "Day 3: CSS", type: "Concept/Self-learning" },
-        { title: "Tag Selectors", topic: "Day 3: CSS", type: "Concept/Self-learning" },
-        { title: "Class Selectors", topic: "Day 3: CSS", type: "Concept/Self-learning" },
-        { title: "ID Selectors", topic: "Day 3: CSS", type: "Concept/Self-learning" },
-        { title: "Colors", topic: "Day 3: CSS", type: "Concept/Self-learning" },
-        { title: "Sizing", topic: "Day 3: CSS", type: "Concept/Self-learning" },
-        { title: "Borders", topic: "Day 3: CSS", type: "Concept/Self-learning" },
-        { title: "The Display Property", topic: "Day 3: CSS", type: "Concept/Self-learning" },
-        { title: "Positioning", topic: "Day 3: CSS", type: "Concept/Self-learning" },
-        { title: "Coordinates", topic: "Day 3: CSS", type: "Concept/Self-learning" },
-        { title: "Daily Assignment", topic: "Day 3: CSS", type: "Assignment/Lab" },
-        { title: "Daily Quick-test", topic: "Day 3: CSS", type: "Test/Quiz" }
+        { title: "Defining Layout", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Applying Styles", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Tag Selectors", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Class Selectors", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "beginner" },
+        { title: "ID Selectors", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Colors", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Sizing", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Borders", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "beginner" },
+        { title: "The Display Property", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Positioning", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Coordinates", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Box Model", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "CSS Grid", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "advanced" },
+        { title: "Flexbox", topic: "Day 3: CSS", type: "Concept/Self-learning", level: "advanced" },
+        { title: "Daily Assignment", topic: "Day 3: CSS", type: "Assignment/Lab", level: "advanced" },
+        { title: "Daily Quick-test", topic: "Day 3: CSS", type: "Test/Quiz", level: "intermediate" }
+      ],
+      vue: [
+        { title: "What is Vue & SPA", topic: "Day 4: Vue.js Core Fundamentals", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Reactive data (ref, reactive)", topic: "Day 4: Vue.js Core Fundamentals", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Template syntax", topic: "Day 4: Vue.js Core Fundamentals", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Directives: v-if, v-for, v-bind, v-model, v-on", topic: "Day 4: Vue.js Core Fundamentals", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Computed properties", topic: "Day 4: Vue.js Core Fundamentals", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Event modifiers", topic: "Day 4: Vue.js Core Fundamentals", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Dynamic class & style binding", topic: "Day 4: Vue.js Core Fundamentals", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Form handling & validation", topic: "Day 4: Vue.js Core Fundamentals", type: "Concept/Self-learning", level: "advanced" },
+        { title: "Create Vue project", topic: "Day 4: Vue.js Core Fundamentals", type: "Assignment/Lab", level: "advanced" },
+        { title: "Components & props", topic: "Day 5: Components & Reusability", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Emits (child -> parent)", topic: "Day 5: Components & Reusability", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Slots", topic: "Day 5: Components & Reusability", type: "Concept/Self-learning", level: "advanced" },
+        { title: "Lifecycle hooks", topic: "Day 5: Components & Reusability", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "ref vs reactive", topic: "Day 5: Components & Reusability", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Split Todo app", topic: "Day 5: Components & Reusability", type: "Assignment/Lab", level: "advanced" }
+      ],
+      nuxt: [
+        { title: "What is Nuxt (SSR, SEO, SSG)", topic: "Day 6: Nuxt.js Fundamentals", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "File-based routing", topic: "Day 6: Nuxt.js Fundamentals", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Layouts", topic: "Day 6: Nuxt.js Fundamentals", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Auto imports", topic: "Day 6: Nuxt.js Fundamentals", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Dynamic routes ([id].vue)", topic: "Day 6: Nuxt.js Fundamentals", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "definePageMeta", topic: "Day 6: Nuxt.js Fundamentals", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Runtime config per environment", topic: "Day 6: Nuxt.js Fundamentals", type: "Concept/Self-learning", level: "advanced" },
+        { title: "Create Nuxt app", topic: "Day 6: Nuxt.js Fundamentals", type: "Assignment/Lab", level: "advanced" },
+        { title: "useFetch", topic: "Day 7: Data Fetching & State", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "useAsyncData", topic: "Day 7: Data Fetching & State", type: "Concept/Self-learning", level: "advanced" },
+        { title: "Error & loading states", topic: "Day 7: Data Fetching & State", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Environment variables", topic: "Day 7: Data Fetching & State", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Integrate Nuxt app", topic: "Day 7: Data Fetching & State", type: "Assignment/Lab", level: "advanced" },
+        { title: "Nuxt CSS handling", topic: "Day 8: Styling & UI", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Tailwind CSS", topic: "Day 8: Styling & UI", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Assets vs public", topic: "Day 8: Styling & UI", type: "Concept/Self-learning", level: "beginner" },
+        { title: "Install TailwindCSS", topic: "Day 8: Styling & UI", type: "Assignment/Lab", level: "intermediate" },
+        { title: "Nuxt middleware", topic: "Day 9: Middleware, Auth & SEO", type: "Concept/Self-learning", level: "advanced" },
+        { title: "Route guards", topic: "Day 9: Middleware, Auth & SEO", type: "Concept/Self-learning", level: "advanced" },
+        { title: "SEO meta tags", topic: "Day 9: Middleware, Auth & SEO", type: "Concept/Self-learning", level: "intermediate" },
+        { title: "Server API routes", topic: "Day 9: Middleware, Auth & SEO", type: "Concept/Self-learning", level: "advanced" },
+        { title: "Create login system", topic: "Day 9: Middleware, Auth & SEO", type: "Assignment/Lab", level: "advanced" }
+      ],
+      "final-project": [
+        { title: "Admin Dashboard Plan", topic: "Day 10-12: FINAL PROJECT", type: "Assignment/Lab", level: "advanced" },
+        { title: "Core Implementation", topic: "Day 10-12: FINAL PROJECT", type: "Assignment/Lab", level: "advanced" },
+        { title: "Final Review", topic: "Day 10-12: FINAL PROJECT", type: "Assignment/Lab", level: "advanced" }
       ]
     };
     const contentDir = path.join(process.cwd(), "server", "content");
     let updatedCount = 0;
     let createdCount = 0;
-    for (const [moduleName, lessonsList] of Object.entries(modules)) {
+    const allModules = modules;
+    for (const [moduleName, lessonsList] of Object.entries(allModules)) {
       for (const lessonData of lessonsList) {
         const slug = `${moduleName}-${lessonData.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`;
-        const filePath = path.join(contentDir, moduleName, `${slug.replace(`${moduleName}-`, "")}.md`);
+        const lessonFolder = slug.replace(`${moduleName}-`, "");
+        const lessonPath = path.join(contentDir, moduleName, lessonFolder);
+        const flatFilePath = path.join(contentDir, moduleName, `${lessonFolder}.md`);
         let content = `# ${lessonData.title}
 
-This lesson covers **${lessonData.title}** as part of the ${moduleName} curriculum.
+Concept overview...`;
+        let practiceContent = `## Practice
 
-## Overview
+Try it out!`;
+        let exerciseInstructions = `## Exercise
 
-Content for ${lessonData.title} goes here.`;
-        if (fs.existsSync(filePath)) {
-          content = fs.readFileSync(filePath, "utf-8");
+Complete the challenge.`;
+        if (fs.existsSync(lessonPath) && fs.lstatSync(lessonPath).isDirectory()) {
+          const readmePath = path.join(lessonPath, "readme.md");
+          const practicePath = path.join(lessonPath, "practice.md");
+          const exercisePath = path.join(lessonPath, "exercise.md");
+          if (fs.existsSync(readmePath)) content = fs.readFileSync(readmePath, "utf-8");
+          if (fs.existsSync(practicePath)) practiceContent = fs.readFileSync(practicePath, "utf-8");
+          if (fs.existsSync(exercisePath)) exerciseInstructions = fs.readFileSync(exercisePath, "utf-8");
+        } else if (fs.existsSync(flatFilePath)) {
+          content = fs.readFileSync(flatFilePath, "utf-8");
         }
         const existingLesson = await db.select().from(lessons).where(eq(lessons.slug, slug)).get();
         if (existingLesson) {
           await db.update(lessons).set({
             title: lessonData.title,
             topic: lessonData.topic,
-            content
+            content,
+            practiceContent,
+            complexity: lessonData.level
           }).where(eq(lessons.id, existingLesson.id)).run();
+          await db.update(exercises).set({
+            instructions: exerciseInstructions
+          }).where(eq(exercises.lessonId, existingLesson.id)).run();
           updatedCount++;
         } else {
           const newLesson = await db.insert(lessons).values({
@@ -2498,64 +2585,16 @@ Content for ${lessonData.title} goes here.`;
             title: lessonData.title,
             slug,
             content,
-            complexity: "Beginner"
+            practiceContent,
+            complexity: lessonData.level
+            // Updated to use the level from the registry
           }).returning().get();
           await db.insert(exercises).values({
             lessonId: newLesson.id,
-            instructions: `Complete the exercise for ${lessonData.title}.`,
-            starterCode: `// Write your ${moduleName} code here
+            instructions: exerciseInstructions,
+            starterCode: `// Starter code for ${lessonData.title}
 `,
             solutionCode: `// Solution for ${lessonData.title}`
-          }).run();
-          createdCount++;
-        }
-      }
-    }
-    const advancedModules = {
-      vue: [
-        { title: "Vue Fundamentals", topic: "Vue Module" },
-        { title: "Reactivity", topic: "Vue Module" },
-        { title: "Components & Props", topic: "Vue Module" },
-        { title: "Emits & Events", topic: "Vue Module" }
-      ],
-      nuxt: [
-        { title: "Nuxt Architecture", topic: "Nuxt Module" },
-        { title: "Routing & Layouts", topic: "Nuxt Module" },
-        { title: "Server API", topic: "Nuxt Module" }
-      ]
-    };
-    for (const [moduleName, lessonsList] of Object.entries(advancedModules)) {
-      for (const lessonData of lessonsList) {
-        const slug = `${moduleName}-${lessonData.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`;
-        const filePath = path.join(contentDir, moduleName, `${slug.replace(`${moduleName}-`, "")}.md`);
-        let content = `# ${lessonData.title}
-
-Advanced content for ${lessonData.title}.`;
-        if (fs.existsSync(filePath)) {
-          content = fs.readFileSync(filePath, "utf-8");
-        }
-        const existingLesson = await db.select().from(lessons).where(eq(lessons.slug, slug)).get();
-        if (existingLesson) {
-          await db.update(lessons).set({
-            title: lessonData.title,
-            topic: lessonData.topic,
-            content
-          }).where(eq(lessons.id, existingLesson.id)).run();
-          updatedCount++;
-        } else {
-          const newLesson = await db.insert(lessons).values({
-            module: moduleName,
-            topic: lessonData.topic,
-            title: lessonData.title,
-            slug,
-            content,
-            complexity: "Intermediate"
-          }).returning().get();
-          await db.insert(exercises).values({
-            lessonId: newLesson.id,
-            instructions: `Exercise for ${lessonData.title}.`,
-            starterCode: `// ${moduleName} starter code`,
-            solutionCode: `// ${moduleName} solution`
           }).run();
           createdCount++;
         }
@@ -2576,15 +2615,40 @@ const progress_post = defineEventHandler(async (event) => {
   const user = event.context.user;
   if (!user) throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
   const body = await readBody(event);
-  const { lessonId, status } = body;
-  if (!lessonId || !status) {
+  const { lessonId, type } = body;
+  if (!lessonId || !type) {
     throw createError({ statusCode: 400, statusMessage: "Missing required fields" });
   }
   const existing = await db.select().from(userProgress).where(and(eq(userProgress.userId, user.id), eq(userProgress.lessonId, lessonId))).get();
+  const update = { updatedAt: /* @__PURE__ */ new Date() };
+  if (type === "practice") update.practiceCompleted = true;
+  if (type === "exercise") update.exerciseCompleted = true;
   if (existing) {
-    await db.update(userProgress).set({ status, updatedAt: /* @__PURE__ */ new Date() }).where(eq(userProgress.id, existing.id)).run();
+    const isPracticeDone = type === "practice" || existing.practiceCompleted;
+    const isExerciseDone = type === "exercise" || existing.exerciseCompleted;
+    if (isPracticeDone && isExerciseDone) {
+      update.status = "completed";
+    }
+    await db.update(userProgress).set(update).where(eq(userProgress.id, existing.id)).run();
   } else {
-    await db.insert(userProgress).values({ userId: user.id, lessonId, status }).run();
+    const isPracticeDone = type === "practice";
+    const isExerciseDone = type === "exercise";
+    console.log(`[Progress Update] Inserting new record: userId=${user.id}, lessonId=${lessonId}`);
+    try {
+      await db.insert(userProgress).values({
+        userId: user.id,
+        lessonId,
+        status: isPracticeDone && isExerciseDone ? "completed" : "in_progress",
+        practiceCompleted: isPracticeDone,
+        exerciseCompleted: isExerciseDone
+      }).run();
+    } catch (err) {
+      console.error(`[Progress Update Error] FK Failure: userId=${user.id}, lessonId=${lessonId}`, err.message);
+      throw createError({
+        statusCode: 400,
+        statusMessage: `Database error: ${err.message}. Your session might be stale. Please log out and log in again.`
+      });
+    }
   }
   return { success: true };
 });
@@ -2692,13 +2756,6 @@ const renderer = defineRenderHandler(async (event) => {
   }
   const NO_SCRIPTS = routeOptions.noScripts;
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext);
-  if (ssrContext._preloadManifest && !NO_SCRIPTS) {
-    ssrContext.head.push({
-      link: [
-        { rel: "preload", as: "fetch", fetchpriority: "low", crossorigin: "anonymous", href: buildAssetsURL(`builds/meta/${ssrContext.runtimeConfig.app.buildId}.json`) }
-      ]
-    }, { ...headEntryOptions, tagPriority: "low" });
-  }
   if (inlinedStyles.length) {
     ssrContext.head.push({ style: inlinedStyles });
   }

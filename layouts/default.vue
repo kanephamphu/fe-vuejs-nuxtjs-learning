@@ -34,11 +34,4 @@
 <script setup lang="ts">
 import { useUserStore } from '~/stores/user';
 const userStore = useUserStore();
-
-// Init user on load
-onMounted(() => {
-  if (!userStore.isAuthenticated) {
-    userStore.fetchUser();
-  }
-});
 </script>

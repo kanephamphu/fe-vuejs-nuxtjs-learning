@@ -30,42 +30,73 @@
               <div class="prose prose-emerald max-w-none" v-html="renderedContent"></div>
             </div>
 
-            <div v-else-if="currentTab === 'Practice'" class="h-full flex flex-col">
-              <h2 class="text-xl font-bold mb-4">Practice Area</h2>
-              <div class="flex-1 border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <VueMonacoEditor
-                  v-model:value="code"
-                  theme="vs-dark"
-                  :options="{
-                    automaticLayout: true,
-                    minimap: { enabled: false },
-                    fontSize: 14,
-                    scrollBeyondLastLine: false
-                  }"
-                  language="javascript"
-                  class="h-full w-full"
-                />
-              </div>
-              <div class="mt-4 flex flex-col gap-4">
-                 <div class="flex justify-between items-center">
-                    <p class="text-slate-500 text-sm">Write your code above and click Run.</p>
-                    <button @click="runCode" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-700 transition-colors">
-                      Run Code
-                    </button>
-                 </div>
-                 <div v-if="output" class="bg-black text-green-400 font-mono text-sm p-4 rounded-xl whitespace-pre-wrap font-bold border-l-4 border-green-500">
-                    {{ output }}
-                 </div>
+            <div v-else-if="currentTab === 'Practice'" class="h-full flex flex-col gap-6">
+              <div class="prose prose-emerald max-w-none mb-4" v-html="renderedPracticeContent"></div>
+              
+              <div class="flex-1 flex flex-col">
+                <h2 class="text-xl font-bold mb-4">Practice Area</h2>
+                <div class="flex-1 border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
+                  <VueMonacoEditor
+                    v-model:value="code"
+                    theme="vs-dark"
+                    :options="{
+                      automaticLayout: true,
+                      minimap: { enabled: false },
+                      fontSize: 14,
+                      scrollBeyondLastLine: false
+                    }"
+                    :language="editorLanguage"
+                    class="w-full"
+                    style="height: 60vh"
+                  />
+                </div>
+                <div class="mt-4 flex flex-col gap-4">
+                   <div class="flex justify-between items-center">
+                      <p class="text-slate-500 text-sm">Write your code above and click Run.</p>
+                      <div class="flex gap-3">
+                        <button @click="runCode" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-700 transition-colors">
+                          Run Code
+                        </button>
+                        <button 
+                          @click="markProgress('practice')" 
+                          :disabled="lesson?.progress?.practiceCompleted"
+                          class="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50"
+                        >
+                          {{ lesson?.progress?.practiceCompleted ? 'Practice Done ✓' : 'Mark Practice Done' }}
+                        </button>
+                      </div>
+                   </div>
+                   <div v-if="output" class="bg-black text-green-400 font-mono text-sm p-4 rounded-xl whitespace-pre-wrap font-bold border-l-4 border-green-500">
+                      {{ output }}
+                   </div>
+                </div>
               </div>
             </div>
 
             <div v-else-if="currentTab === 'Exercise'">
               <h2 class="text-xl font-bold mb-4">Exercise</h2>
-              <p class="mb-4 text-slate-700">{{ lesson.exercise?.instructions || 'No instructions.' }}</p>
+              <ExerciseViewer :instructions="lesson?.exercise?.instructions || ''" @update:completed="isExerciseReady = $event" />
               
-              <button @click="markCompleted" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20">
-                Mark as Completed
-              </button>
+              <div class="flex flex-col gap-4 mt-8 pt-8 border-t border-slate-100">
+                <div v-if="lesson?.progress?.practiceCompleted" class="p-4 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-medium border border-emerald-100">
+                  Practice session completed! Submit the exercise to finish the lesson.
+                </div>
+                <div v-else class="p-4 bg-amber-50 text-amber-700 rounded-xl text-sm font-medium border border-amber-100">
+                  Complete the Practice session first to unlock full lesson completion.
+                </div>
+
+                <div v-if="!isExerciseReady && !lesson?.progress?.exerciseCompleted" class="text-amber-600 text-xs font-bold uppercase tracking-wider">
+                  ⚠️ Please complete all questions above to enable submission
+                </div>
+
+                <button 
+                  @click="markProgress('exercise')" 
+                  :disabled="lesson?.progress?.exerciseCompleted || !isExerciseReady"
+                  class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20 disabled:opacity-50 disabled:grayscale"
+                >
+                  {{ lesson?.progress?.exerciseCompleted ? 'Exercise Submitted ✓' : 'Submit Exercise' }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -86,6 +117,19 @@ import { VueMonacoEditor } from '@guolao/vue-monaco-editor';
 const route = useRoute();
 const currentTab = ref('Definition');
 const tabs = ['Definition', 'Practice', 'Exercise'];
+const isExerciseReady = ref(false);
+
+const editorLanguage = computed(() => {
+  const module = route.params.module as string;
+  const map: Record<string, string> = {
+    typescript: 'typescript',
+    vue: 'html', // Monaco's HTML mode handles Vue basics. 'vue' mode requires extra setup.
+    nuxt: 'html',
+    css: 'css',
+    javascript: 'javascript'
+  };
+  return map[module] || 'javascript';
+});
 
 const { data: lesson } = await useFetch(`/api/lessons/${route.params.slug}`);
 
@@ -103,6 +147,14 @@ const renderedContent = computed(() => {
   return lesson.value?.content ? md.render(lesson.value.content) : '';
 });
 
+const renderedPracticeContent = computed(() => {
+  return lesson.value?.practiceContent ? md.render(lesson.value.practiceContent) : '';
+});
+
+const renderedExerciseInstructions = computed(() => {
+  return lesson.value?.exercise?.instructions ? md.render(lesson.value.exercise.instructions) : '';
+});
+
 const output = ref('');
 
 function runCode() {
@@ -116,7 +168,13 @@ function runCode() {
       originalLog(...args);
     };
 
-    // Execute code (Note: eval is used for demo purposes. In production, use a sandboxed environment)
+    // Execute code
+    if (editorLanguage.value === 'typescript') {
+        // Simple strip of type annotations could go here, but for now we warn
+        // TODO: Add proper client-side transpiler if needed
+        console.warn('TypeScript execution is not fully supported in this demo environment yet.');
+    }
+    
     // eslint-disable-next-line no-eval
     eval(code.value);
 
@@ -127,23 +185,31 @@ function runCode() {
   }
 }
 
-async function markCompleted() {
+async function markProgress(type: 'practice' | 'exercise') {
   try {
     await $fetch('/api/user/progress', {
       method: 'POST',
       body: {
         lessonId: lesson.value?.id,
-        status: 'completed'
+        type
       }
     });
 
-    // Clear cached data to ensure dashboard updates
-    clearNuxtData();
+    // Refresh lesson data to get updated progress
+    await refreshNuxtData();
     
-    alert('Lesson completed! 🎉');
-    navigateTo('/dashboard');
+    if (type === 'practice') {
+      alert('Practice marked as done! Now complete the exercise to finish the lesson.');
+    } else {
+      if (lesson.value?.progress?.practiceCompleted) {
+        alert('Lesson completed! 🎉');
+        navigateTo('/dashboard');
+      } else {
+        alert('Exercise submitted! Don\'t forget to complete the practice session as well.');
+      }
+    }
   } catch (error) {
-    console.error('Failed to mark lesson as completed:', error);
+    console.error('Failed to update progress:', error);
     alert('Failed to save progress. Please try again.');
   }
 }

@@ -1,6 +1,6 @@
 import { db } from '~/server/db';
-import { lessons, exercises } from '~/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { lessons, exercises, userProgress } from '~/server/db/schema';
+import { eq, and } from 'drizzle-orm';
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug');
@@ -17,5 +17,13 @@ export default defineEventHandler(async (event) => {
 
   const exercise = await db.select().from(exercises).where(eq(exercises.lessonId, lesson.id)).get();
 
-  return { ...lesson, exercise };
+  const user = event.context.user;
+  let progress = null;
+  if (user) {
+    progress = await db.select().from(userProgress)
+      .where(and(eq(userProgress.userId, user.id), eq(userProgress.lessonId, lesson.id)))
+      .get();
+  }
+
+  return { ...lesson, exercise, progress };
 });

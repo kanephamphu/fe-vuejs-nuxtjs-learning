@@ -15,13 +15,14 @@ export const lessons = sqliteTable('lessons', {
   title: text('title').notNull(),
   slug: text('slug').notNull().unique(),
   content: text('content').notNull(), // Markdown content
+  practiceContent: text('practice_content'), // New field for practice instructions
   complexity: text('complexity'), // 'beginner', 'intermediate', 'advanced'
 });
 
 export const exercises = sqliteTable('exercises', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   lessonId: integer('lesson_id').references(() => lessons.id).notNull(),
-  instructions: text('instructions').notNull(),
+  instructions: text('instructions').notNull(), // This will be used for the exercise markdown
   starterCode: text('starter_code').notNull(),
   solutionCode: text('solution_code').notNull(),
 });
@@ -31,5 +32,7 @@ export const userProgress = sqliteTable('user_progress', {
   userId: integer('user_id').references(() => users.id).notNull(),
   lessonId: integer('lesson_id').references(() => lessons.id).notNull(),
   status: text('status').notNull(), // 'completed', 'in_progress'
+  practiceCompleted: integer('practice_completed', { mode: 'boolean' }).default(false),
+  exerciseCompleted: integer('exercise_completed', { mode: 'boolean' }).default(false),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`CURRENT_TIMESTAMP`),
 });

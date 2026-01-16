@@ -15,6 +15,10 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
+  compatibilityDate: '2024-04-03',
+  experimental: {
+    appManifest: false
+  },
   runtimeConfig: {
     jwtSecret: process.env.JWT_SECRET || 'secret',
   },
