@@ -10,11 +10,39 @@
     <!-- Sidebar -->
     <div class="w-full lg:w-64 bg-white border-r border-slate-200 overflow-y-auto hidden lg:block" v-if="!isFullScreen && !isSlideshow">
       <div class="p-4">
-        <NuxtLink to="/dashboard" class="flex items-center text-slate-500 hover:text-emerald-600 mb-6 font-medium">
-          ← Back to Dashboard
+      <div class="p-4">
+        <NuxtLink :to="`/roadmaps/${route.params.module}`" class="flex items-center text-slate-500 hover:text-emerald-600 mb-6 font-medium">
+          ← Back to {{ route.params.module }}
         </NuxtLink>
         <h3 class="font-bold text-slate-900 mb-2 uppercase text-xs tracking-wider">Current Lesson</h3>
         <p class="text-sm text-slate-700 font-medium mb-4">{{ lesson?.title }}</p>
+
+        <div v-if="lesson?.prevLesson || lesson?.nextLesson" class="mt-8 pt-6 border-t border-slate-100 flex flex-col gap-3">
+           <h3 class="font-bold text-slate-900 mb-2 uppercase text-xs tracking-wider">Navigation</h3>
+           
+           <NuxtLink 
+             v-if="lesson?.prevLesson"
+             :to="`/learn/${route.params.module}/${lesson.prevLesson.slug}`"
+             class="block p-3 rounded-xl bg-white border border-slate-200 hover:border-emerald-200 hover:bg-emerald-50 transition-all group opacity-75 hover:opacity-100"
+           >
+              <div class="text-xs text-slate-400 group-hover:text-emerald-600 mb-1">Previous Lesson</div>
+              <div class="text-sm font-bold text-slate-700 group-hover:text-emerald-800">
+                 ← {{ lesson.prevLesson.title }}
+              </div>
+           </NuxtLink>
+
+           <NuxtLink 
+             v-if="lesson?.nextLesson"
+             :to="`/learn/${route.params.module}/${lesson.nextLesson.slug}`"
+             class="block p-3 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 transition-all group"
+           >
+              <div class="text-xs text-slate-500 mb-1">Next Lesson</div>
+              <div class="text-sm font-bold text-slate-800 group-hover:text-emerald-700">
+                 {{ lesson.nextLesson.title }} →
+              </div>
+           </NuxtLink>
+        </div>
+      </div>
       </div>
     </div>
 
@@ -166,7 +194,9 @@ const editorLanguage = computed(() => {
   return map[module] || 'javascript';
 });
 
-const { data: lesson } = await useFetch(`/api/lessons/${route.params.slug}`);
+const { data: lesson } = await useFetch(`/api/lessons/${route.params.slug}`, {
+  query: { roadmap: route.params.module }
+});
 
 const code = ref(lesson.value?.exercise?.starterCode || '// Write your code here');
 

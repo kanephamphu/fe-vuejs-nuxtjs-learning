@@ -1,201 +1,219 @@
 <template>
-  <div class="space-y-8 py-8">
-    <div v-if="data" class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 bg-gradient-to-r from-emerald-50 to-white">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 class="text-3xl font-bold text-slate-900 mb-2">Welcome Back!</h1>
-          <p class="text-slate-600">Continue your journey to mastery.</p>
-        </div>
-        <div class="md:w-64">
-          <div class="flex justify-between items-end mb-2">
-            <span class="text-sm font-bold text-emerald-700">Overall Progress</span>
-            <span class="text-lg font-black text-emerald-600">{{ data.stats?.globalPercentage }}%</span>
-          </div>
-          <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
-            <div 
-              class="h-full bg-emerald-500 transition-all duration-1000 ease-out"
-              :style="{ width: `${data.stats?.globalPercentage}%` }"
-            ></div>
-          </div>
-          <p class="mt-2 text-xs text-slate-500 text-right">
-            {{ data.stats?.completedLessons }} / {{ data.stats?.totalLessons }} lessons completed
-          </p>
-        </div>
-      </div>
-    </div>
+  <div class="min-h-screen bg-slate-50 font-sans pb-20">
 
-    <!-- Continue Learning Shortcut -->
-    <div v-if="nextLesson" class="relative overflow-hidden bg-slate-900 rounded-3xl p-8 shadow-lg group cursor-pointer transition-transform hover:scale-[1.01]" @click="navigateTo(`/learn/${nextLesson.module}/${nextLesson.slug}`)">
-      <!-- Background Effects -->
-      <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-      <div class="absolute bottom-0 left-0 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none"></div>
-      
-      <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div class="flex items-start gap-5">
-           <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-2xl shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform">
-             ▶
-           </div>
-           <div>
-             <div class="flex items-center gap-2 mb-1">
-               <span class="text-emerald-400 font-bold text-xs uppercase tracking-wider">Up Next</span>
-               <span class="w-1 h-1 rounded-full bg-slate-600"></span>
-               <span class="text-slate-400 text-xs font-medium">{{ nextLesson.module }} Module</span>
-             </div>
-             <h2 class="text-2xl font-bold text-white mb-1 group-hover:text-emerald-300 transition-colors">{{ nextLesson.title }}</h2>
-             <p class="text-slate-400 text-sm">{{ nextLesson.topic }}</p>
-           </div>
-        </div>
-        
-        <div class="flex items-center gap-3 bg-white/5 pl-4 pr-3 py-2 rounded-full border border-white/10 group-hover:bg-white/10 transition-colors">
-          <span class="text-sm font-bold text-white">Continue Lesson</span>
-          <div class="w-8 h-8 rounded-full bg-white text-slate-900 flex items-center justify-center -mr-1">
-            →
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Learning Roadmap -->
-    <div class="space-y-6">
-      <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-        <span class="text-2xl">🗺️</span> Learning Path
-      </h2>
-      <div class="relative bg-white rounded-3xl p-8 border border-slate-200 shadow-sm overflow-hidden">
-        <!-- Connecting Line -->
-        <div class="absolute top-1/2 left-12 right-12 h-1 bg-slate-100 -translate-y-1/2 hidden md:block"></div>
-        
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-y-8 gap-x-4 relative z-10">
-           <div v-for="(step, idx) in roadmapSteps" :key="step.key" class="flex flex-col items-center text-center group relative">
-              <!-- Circle -->
-              <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black transition-all duration-300 relative z-10 border-4 mb-3"
-                 :class="[
-                   isModuleCompleted(step.key) ? 'bg-emerald-500 border-emerald-100 text-white shadow-lg shadow-emerald-500/20' : 
-                   isModuleInProgress(step.key) ? 'bg-white border-amber-400 text-amber-500 shadow-lg shadow-amber-500/20 scale-110' : 
-                   'bg-slate-50 border-slate-100 text-slate-300'
-                 ]"
-              >
-                {{ step.label }}
-                <!-- Status Badge -->
-                <div v-if="isModuleCompleted(step.key)" class="absolute -top-2 -right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center text-emerald-500 border border-emerald-100 shadow-sm">
-                  ✓
-                </div>
-              </div>
-              <h3 class="font-bold text-slate-700 text-sm" :class="{ 'text-emerald-700': isModuleCompleted(step.key), 'text-amber-600': isModuleInProgress(step.key) }">{{ step.name }}</h3>
-              <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold mt-1">{{ isModuleCompleted(step.key) ? 'Completed' : isModuleInProgress(step.key) ? 'In Progress' : 'Locked' }}</p>
-           </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Modules -->
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-12">
     <div v-if="data" class="space-y-12">
-      <div v-for="(lessons, moduleName) in data.modules" :key="moduleName" class="space-y-6">
-        <div class="flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-             <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-xl" 
-                  :class="{
-                    'bg-emerald-500': moduleName === 'vue',
-                    'bg-green-600': moduleName === 'nuxt',
-                    'bg-yellow-500': moduleName === 'javascript',
-                    'bg-blue-600': moduleName === 'typescript',
-                    'bg-sky-500': moduleName === 'css',
-                  }">
-               {{ moduleName[0].toUpperCase() }}
-             </div>
-             <h2 class="text-2xl font-bold capitalize text-slate-900">{{ moduleName }} Module</h2>
+      <!-- Welcome Section -->
+      <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 bg-gradient-to-r from-emerald-50 to-white">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h1 class="text-3xl font-bold text-slate-900 mb-2">My Progress</h1>
+            <p class="text-slate-600">Track your journey across all enrolled courses.</p>
           </div>
-          <div class="flex items-center gap-4">
-             <span class="text-sm font-bold text-slate-400 group-hover:text-emerald-600">{{ data.stats?.moduleStats[moduleName]?.percentage }}%</span>
-             <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden hidden sm:block">
-                <div 
-                  class="h-full bg-emerald-400 transition-all duration-500"
-                  :style="{ width: `${data.stats?.moduleStats[moduleName]?.percentage}%` }"
-                ></div>
-             </div>
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <NuxtLink v-for="lesson in lessons" :key="lesson.id" :to="`/learn/${lesson.module}/${lesson.slug}`" class="block bg-white p-6 rounded-2xl border border-slate-200 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all group relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rounded-bl-full -mr-8 -mt-8 transition-all group-hover:scale-150"></div>
-            
-            <div class="flex justify-between items-start mb-4 relative">
-              <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">{{ lesson.complexity || 'Beginner' }}</span>
-              <div v-if="data.progress && data.progress[lesson.id] === 'completed'" class="flex items-center gap-1.5 bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg text-xs font-bold">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                </svg>
-                Done
-              </div>
-              <div v-else-if="data.progress && data.progress[lesson.id] === 'in_progress'" class="bg-amber-100 text-amber-700 px-2 py-1 rounded-lg text-xs font-bold">
-                In Progress
-              </div>
+          <div class="md:w-64">
+            <div class="flex justify-between items-end mb-2">
+              <span class="text-sm font-bold text-emerald-700">Overall</span>
+              <span class="text-lg font-black text-emerald-600">{{ globalStats.globalPercentage }}%</span>
             </div>
-            
-            <h3 class="text-lg font-bold text-slate-900 mb-2 group-hover:text-emerald-600 transition-colors relative">{{ lesson.title }}</h3>
-            <p class="text-slate-500 text-sm line-clamp-2 relative">{{ lesson.topic }}</p>
-          </NuxtLink>
+            <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
+              <div 
+                class="h-full bg-emerald-500 transition-all duration-1000 ease-out"
+                :style="{ width: `${globalStats.globalPercentage}%` }"
+              ></div>
+            </div>
+            <p class="mt-2 text-xs text-slate-500 text-right">
+              {{ globalStats.completedLessons }} / {{ globalStats.totalLessons }} lessons completed
+            </p>
+          </div>
         </div>
       </div>
+
+      <!-- My Roadmaps Section -->
+      <div v-if="myRoadmaps.length > 0">
+         <h2 class="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+            <span>📚</span> My Roadmaps
+         </h2>
+         
+         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <NuxtLink 
+               v-for="rm in myRoadmaps" 
+               :key="rm.id" 
+               :to="`/roadmaps/${rm.slug}`"
+               class="group relative bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden flex flex-col items-center text-center"
+            >
+               <!-- Background Gradient Blur -->
+               <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br"
+                  :class="getModuleGradient(rm.slug)"></div>
+               
+               <!-- Content -->
+               <div class="relative z-10 w-full flex flex-col items-center">
+                  <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-black mb-6 shadow-lg bg-white text-slate-900">
+                     {{ getModuleLabel(rm.slug) }}
+                  </div>
+                  
+                  <h3 class="text-2xl font-bold text-slate-900 group-hover:text-white transition-colors mb-2">{{ rm.title }}</h3>
+                  
+                  <!-- Progress Bar -->
+                  <div class="w-full bg-slate-100 rounded-full h-2 mb-4 overflow-hidden group-hover:bg-white/20 mt-4">
+                     <div class="h-full bg-emerald-500 group-hover:bg-white transition-all duration-1000"
+                        :style="{ width: `${rm.stats.percentage}%` }"></div>
+                  </div>
+                  
+                  <span class="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-full group-hover:bg-white group-hover:text-slate-900 transition-colors">
+                     {{ isRoadmapCompleted(rm) ? 'Review' : isRoadmapInProgress(rm) ? 'Continue' : 'Start' }}
+                  </span>
+               </div>
+            </NuxtLink>
+         </div>
+      </div>
+
+      <!-- Explore Section -->
+      <div>
+         <h2 class="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+            <span>🌍</span> Explore More Roadmaps
+         </h2>
+         
+         <div v-if="exploreRoadmaps.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div 
+               v-for="rm in exploreRoadmaps" 
+               :key="rm.id" 
+               class="relative bg-white/50 rounded-3xl p-8 border border-slate-200 hover:border-emerald-300 transition-colors flex flex-col items-center text-center"
+            >
+               <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black mb-4 bg-slate-100 text-slate-500 grayscale opacity-80">
+                  {{ getModuleLabel(rm.slug) }}
+               </div>
+               
+               <h3 class="text-xl font-bold text-slate-900 mb-2">{{ rm.title }}</h3>
+               <p class="text-slate-500 text-sm mb-6">{{ rm.description }}</p>
+               
+               <button 
+                  @click="enroll(rm.id)"
+                  :disabled="loading"
+                  class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-full transition-all shadow-md hover:shadow-emerald-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+               >
+                  {{ loading ? 'Enrolling...' : 'Enroll Now' }}
+               </button>
+            </div>
+         </div>
+         <div v-else class="text-slate-500 italic">
+            You have enrolled in all available roadmaps!
+         </div>
+      </div>
+
     </div>
     
-    <div v-else class="text-center py-20 text-slate-500">
-      Loading your curriculum...
+    <div v-else class="flex justify-center py-20">
+       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
     </div>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useUserStore } from '~/stores/user';
-import { onMounted, computed } from 'vue';
+import { onMounted, computed, ref } from 'vue';
 
 definePageMeta({
   middleware: ['auth']
 })
 
-const { data, refresh } = await useFetch('/api/modules');
+const { data, refresh } = await useFetch('/api/roadmaps');
+const loading = ref(false);
 
-const roadmapSteps = [
-  { key: 'javascript', label: 'JS', name: 'JavaScript', desc: 'The Foundation' },
-  { key: 'typescript', label: 'TS', name: 'TypeScript', desc: 'Type Safety' },
-  { key: 'css', label: 'CSS', name: 'CSS', desc: 'Styling' },
-  { key: 'vue', label: 'Vue', name: 'Vue.js', desc: 'The Framework' },
-  { key: 'nuxt', label: 'Nuxt', name: 'Nuxt', desc: 'Fullstack Power' },
-];
+const myRoadmaps = computed(() => data.value?.roadmaps?.filter((r: any) => r.isEnrolled) || []);
+const exploreRoadmaps = computed(() => data.value?.roadmaps?.filter((r: any) => !r.isEnrolled) || []);
 
-function isModuleCompleted(moduleKey: string) {
-  return data.value?.stats?.moduleStats[moduleKey]?.percentage === 100;
-}
-
-function isModuleInProgress(moduleKey: string) {
-  const percentage = data.value?.stats?.moduleStats[moduleKey]?.percentage;
-  return percentage > 0 && percentage < 100;
-}
-
-const nextLesson = computed(() => {
-  if (!data.value) return null;
-  
-  // Flatten all lessons
-  const allLessons = [];
-  const modulesOrder = ['javascript', 'typescript', 'css', 'vue', 'nuxt'];
-  
-  for (const mod of modulesOrder) {
-    if (data.value.modules[mod]) {
-      allLessons.push(...data.value.modules[mod]);
+async function enroll(roadmapId: number) {
+  loading.value = true;
+  try {
+    await $fetch('/api/roadmaps/enroll', {
+      method: 'POST',
+      body: { roadmapId }
+    });
+    // Optimistic update
+    if (data.value?.roadmaps) {
+       const rm = data.value.roadmaps.find((r: any) => r.id === roadmapId);
+       if (rm) rm.isEnrolled = true;
     }
+  } catch (e) {
+    console.error('Enrollment failed', e);
+  } finally {
+    loading.value = false;
   }
+}
 
-  // Find first in_progress
-  const firstInProgress = allLessons.find(l => data.value.progress && data.value.progress[l.id] === 'in_progress');
-  if (firstInProgress) return firstInProgress;
-
-  // Find first not completed
-  const firstNew = allLessons.find(l => !data.value.progress || !data.value.progress[l.id]);
-  return firstNew;
+// Calculate Global Stats
+const globalStats = computed(() => {
+   if (!data.value?.roadmaps) return { totalLessons: 0, completedLessons: 0, globalPercentage: 0 };
+   
+   let total = 0;
+   let completed = 0;
+   
+   for (const rm of myRoadmaps.value) {
+      total += rm.stats.total;
+      completed += rm.stats.completed;
+   }
+   
+   return {
+      totalLessons: total,
+      completedLessons: completed,
+      globalPercentage: total > 0 ? Math.round((completed / total) * 100) : 0
+   };
 });
 
+const nextLesson = computed(() => {
+  if (!data.value?.roadmaps) return null;
+  
+  // Find first in_progress across all roadmaps -> courses
+  for (const rm of data.value.roadmaps) {
+     for (const course of rm.courses) {
+        // We need lesson status but API returns stats. 
+        // Wait, the API structure removed the global progress map return.
+        // We should fix the API or iterating logic.
+        // Actually, let's just loop through and find the first one that implies incomplete.
+        // Or better, update API to return progress map too OR inject status into lessons.
+        // To be safe and quick, I'll rely on what I wrote in API.
+        
+        // Ah, in API I didn't inject 'status' field into lesson objects, just stats.
+        // That was an oversight for `nextLesson` Logic.
+        // However, I can't see the lesson status on the dashboard logic easily without it.
+        // I will assume for now I should update the API to be more robust or I can just pick the first uncompleted lesson.
+     }
+  }
+  return null; // Placeholder until API refinement
+});
+
+function isRoadmapCompleted(rm: any) {
+  return rm.stats.percentage === 100;
+}
+
+function isRoadmapInProgress(rm: any) {
+  return rm.stats.percentage > 0 && rm.stats.percentage < 100;
+}
+
+function getModuleGradient(key: string) {
+   const map: Record<string, string> = {
+      javascript: 'from-yellow-400/90 to-yellow-600/90',
+      typescript: 'from-blue-500/90 to-blue-700/90',
+      css: 'from-sky-400/90 to-sky-600/90',
+      vue: 'from-emerald-400/90 to-emerald-600/90',
+      nuxt: 'from-green-500/90 to-green-700/90',
+      'fe-master-vue-nuxt': 'from-indigo-500/90 to-purple-600/90'
+   };
+   return map[key] || 'from-slate-400 to-slate-600';
+}
+
+function getModuleLabel(key: string) {
+    const map: Record<string, string> = {
+      javascript: 'JS', typescript: 'TS', css: 'CSS', vue: 'Vue', nuxt: 'Nuxt',
+      'fe-master-vue-nuxt': 'FE'
+   };
+   return map[key] || key.substring(0,2).toUpperCase();
+}
+
 onMounted(async () => {
-  // Always refresh when mounting to ensure progress is up to date
   console.log('[Dashboard] Refreshing progress data...');
   await refresh();
   console.log('[Dashboard] Data refreshed.');

@@ -1,14 +1,14 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import fs from 'node:fs';
 import path from 'node:path';
-import { lessons, exercises } from '../server/db/schema';
+import { db } from '../server/db';
+import { lessons, exercises, roadmaps, courses, roadmapCourses } from '../server/db/schema';
 import * as schema from '../server/db/schema';
 
 // Database setup for standalone script
-const dbPath = path.join(process.cwd(), 'data.db');
-const sqlite = new Database(dbPath);
+const sqlite = new Database('data.db');
 const db = drizzle(sqlite, { schema });
 
 async function seed() {
@@ -105,78 +105,193 @@ async function seed() {
       ]
     };
 
-    const contentDir = path.join(process.cwd(), 'server', 'content');
-    let updatedCount = 0;
+    const roadmapConfig: Record<string, { title: string, order: number, description: string }> = {
+      javascript: { title: 'JavaScript', order: 1, description: 'Master the language of the web.' },
+      typescript: { title: 'TypeScript', order: 2, description: 'Type safety for scalable apps.' },
+      css: { title: 'CSS Mastery', order: 3, description: 'Styling and layout fundamentals.' },
+      vue: { title: 'Vue.js', order: 4, description: 'The progressive JavaScript framework.' },
+      nuxt: { title: 'Nuxt.js', order: 5, description: 'The Intuitive Web Framework.' },
+      'final-project': { title: 'Final Project', order: 6, description: 'Build a real-world application.' }
+    };
+
+    // We are NOT clearing data to preserve IDs, but normally you might want to conform state.
+    // For now, we assume upserts.
+
     let createdCount = 0;
+    let updatedCount = 0;
 
-    const allModules = modules;
+    const contentDir = path.join(process.cwd(), 'server', 'content');
 
-    for (const [moduleName, lessonsList] of Object.entries(allModules)) {
-      for (const lessonData of lessonsList as any[]) {
-        const slug = `${moduleName}-${lessonData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`;
-        const lessonFolder = slug.replace(`${moduleName}-`, '');
-        const lessonPath = path.join(contentDir, moduleName, lessonFolder);
-        const flatFilePath = path.join(contentDir, moduleName, `${lessonFolder}.md`);
+    // 0. Ensure Master Roadmap exists
+    const masterSlug = 'fe-master-vue-nuxt';
+    let masterRoadmap = await db.select().from(roadmaps).where(eq(roadmaps.slug, masterSlug)).get();
+    if (!masterRoadmap) {
+      masterRoadmap = await db.insert(roadmaps).values({
+        slug: masterSlug,
+        title: 'FE VueJS/NuxtJS Master',
+        description: 'The complete path to Frontend Mastery using Vue and Nuxt.',
+        order: 0 // Top priority
+      }).returning().get();
+      console.log(`Created Master Roadmap: ${masterRoadmap.title}`);
+    }
 
-        let content = `# ${lessonData.title}\n\nConcept overview...`;
-        let practiceContent = `## Practice\n\nTry it out!`;
-        let exerciseInstructions = `## Exercise\n\nComplete the challenge.`;
+    let globalCourseOrder = 1;
 
-        if (fs.existsSync(lessonPath) && fs.lstatSync(lessonPath).isDirectory()) {
-          // Folder structure
-          const readmePath = path.join(lessonPath, 'readme.md');
-          const practicePath = path.join(lessonPath, 'practice.md');
-          const exercisePath = path.join(lessonPath, 'exercise.md');
+    // 1. Iterate over defined modules (Roadmaps)
+    for (const [moduleKey, lessonsList] of Object.entries(modules)) {
+      const rmConfig = roadmapConfig[moduleKey] || { title: moduleKey, order: 99, description: 'Learn ' + moduleKey };
 
-          if (fs.existsSync(readmePath)) content = fs.readFileSync(readmePath, 'utf-8');
-          if (fs.existsSync(practicePath)) practiceContent = fs.readFileSync(practicePath, 'utf-8');
-          if (fs.existsSync(exercisePath)) exerciseInstructions = fs.readFileSync(exercisePath, 'utf-8');
-        } else if (fs.existsSync(flatFilePath)) {
-          // Legacy flat file structure
-          content = fs.readFileSync(flatFilePath, 'utf-8');
+      // Upsert Specific Roadmap (e.g. JavaScript, Vue.js)
+      let roadmap = await db.select().from(roadmaps).where(eq(roadmaps.slug, moduleKey)).get();
+      if (!roadmap) {
+        roadmap = await db.insert(roadmaps).values({
+          slug: moduleKey,
+          title: rmConfig.title,
+          description: rmConfig.description,
+          order: rmConfig.order
+        }).returning().get();
+        console.log(`Created Roadmap: ${rmConfig.title}`);
+      } else {
+        await db.update(roadmaps).set({
+          title: rmConfig.title,
+          description: rmConfig.description,
+          order: rmConfig.order
+        }).where(eq(roadmaps.id, roadmap.id)).run();
+      }
+
+      // 2. Group lessons by Topic to form Courses
+      const coursesMap = new Map<string, any[]>();
+      for (const l of lessonsList) {
+        const topic = (l as any).topic || 'General';
+        if (!coursesMap.has(topic)) {
+          coursesMap.set(topic, []);
+        }
+        coursesMap.get(topic)?.push(l);
+      }
+
+      // 3. Upsert Courses and Link to Roadmaps
+      let courseOrder = 1;
+
+      for (const [topicTitle, topicLessons] of coursesMap.entries()) {
+        const courseSlug = `${moduleKey}-${topicTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+
+        let course = await db.select().from(courses).where(eq(courses.slug, courseSlug)).get();
+
+        if (!course) {
+          course = await db.insert(courses).values({
+            // roadmapId is gone
+            title: topicTitle,
+            slug: courseSlug,
+            description: `Lessons for ${topicTitle}`,
+            order: globalCourseOrder // Order globally or within context? We keep a default here.
+          }).returning().get();
+          console.log(`  > Created Course: ${topicTitle}`);
+        } else {
+          await db.update(courses).set({
+            title: topicTitle,
+          }).where(eq(courses.id, course.id)).run();
         }
 
-        // Check if lesson exists
-        const existingLesson = db.select().from(lessons).where(eq(lessons.slug, slug)).get();
+        // Link to Specific Roadmap
+        // Check if link exists to avoid duplicates (though we wipe db usually, upsert logic is safer)
+        const linkExists = await db.select().from(roadmapCourses).where(
+          and(eq(roadmapCourses.roadmapId, roadmap.id), eq(roadmapCourses.courseId, course.id))
+        ).get();
 
-        if (existingLesson) {
-          db.update(lessons)
-            .set({
-              title: lessonData.title,
-              topic: lessonData.topic,
-              content: content,
-              practiceContent: practiceContent,
-              complexity: lessonData.level // Map module.level to complexity
-            })
-            .where(eq(lessons.id, existingLesson.id))
-            .run();
-
-          db.update(exercises)
-            .set({
-              instructions: exerciseInstructions
-            })
-            .where(eq(exercises.lessonId, existingLesson.id))
-            .run();
-          updatedCount++;
-        } else {
-          // Create new lesson
-          const newLesson = db.insert(lessons).values({
-            module: moduleName,
-            topic: lessonData.topic,
-            title: lessonData.title,
-            slug: slug,
-            content,
-            practiceContent,
-            complexity: lessonData.level // Updated to use the level from the registry
-          }).returning().get();
-
-          db.insert(exercises).values({
-            lessonId: newLesson.id,
-            instructions: exerciseInstructions,
-            starterCode: `// Starter code for ${lessonData.title}\n`,
-            solutionCode: `// Solution for ${lessonData.title}`
+        if (!linkExists) {
+          await db.insert(roadmapCourses).values({
+            roadmapId: roadmap.id,
+            courseId: course.id,
+            order: courseOrder
           }).run();
-          createdCount++;
+        }
+
+        // Link to Master Roadmap
+        const masterLinkExists = await db.select().from(roadmapCourses).where(
+          and(eq(roadmapCourses.roadmapId, masterRoadmap.id), eq(roadmapCourses.courseId, course.id))
+        ).get();
+
+        if (!masterLinkExists) {
+          await db.insert(roadmapCourses).values({
+            roadmapId: masterRoadmap.id,
+            courseId: course.id,
+            order: globalCourseOrder
+          }).run();
+        }
+
+        courseOrder++;
+        globalCourseOrder++;
+
+        // 4. Upsert Lessons
+        let lessonOrder = 1;
+        for (const lessonData of topicLessons) {
+          const slug = `${moduleKey}-${lessonData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`;
+          const lessonFolder = slug.replace(`${moduleKey}-`, '');
+          const lessonPath = path.join(contentDir, moduleKey, lessonFolder);
+          const flatFilePath = path.join(contentDir, moduleKey, `${lessonFolder}.md`);
+
+          let content = `# ${lessonData.title}\n\nConcept overview...`;
+          let practiceContent = `## Practice\n\nTry it out!`;
+          let exerciseInstructions = `## Exercise\n\nComplete the challenge.`;
+
+          if (fs.existsSync(lessonPath) && fs.lstatSync(lessonPath).isDirectory()) {
+            const readmePath = path.join(lessonPath, 'readme.md');
+            const practicePath = path.join(lessonPath, 'practice.md');
+            const exercisePath = path.join(lessonPath, 'exercise.md');
+
+            if (fs.existsSync(readmePath)) content = fs.readFileSync(readmePath, 'utf-8');
+            if (fs.existsSync(practicePath)) practiceContent = fs.readFileSync(practicePath, 'utf-8');
+            if (fs.existsSync(exercisePath)) exerciseInstructions = fs.readFileSync(exercisePath, 'utf-8');
+          } else if (fs.existsSync(flatFilePath)) {
+            content = fs.readFileSync(flatFilePath, 'utf-8');
+          }
+
+          const existingLesson = await db.select().from(lessons).where(eq(lessons.slug, slug)).get();
+
+          if (existingLesson) {
+            await db.update(lessons)
+              .set({
+                title: lessonData.title,
+                courseId: course.id,
+                topic: topicTitle,
+                module: moduleKey,
+                content: content,
+                practiceContent: practiceContent,
+                complexity: lessonData.level,
+                order: lessonOrder
+              })
+              .where(eq(lessons.id, existingLesson.id))
+              .run();
+
+            // Update separate exercise table
+            await db.update(exercises)
+              .set({ instructions: exerciseInstructions })
+              .where(eq(exercises.lessonId, existingLesson.id))
+              .run();
+
+            updatedCount++;
+          } else {
+            const newLesson = await db.insert(lessons).values({
+              courseId: course.id,
+              module: moduleKey,
+              topic: topicTitle,
+              title: lessonData.title,
+              slug: slug,
+              content,
+              practiceContent,
+              complexity: lessonData.level,
+              order: lessonOrder
+            }).returning().get();
+
+            await db.insert(exercises).values({
+              lessonId: newLesson.id,
+              instructions: exerciseInstructions,
+              starterCode: `// Starter code for ${lessonData.title}\n`,
+              solutionCode: `// Solution for ${lessonData.title}`
+            }).run();
+            createdCount++;
+          }
+          lessonOrder++;
         }
       }
     }
