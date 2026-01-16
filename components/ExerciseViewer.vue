@@ -1,56 +1,56 @@
 <template>
-  <div class="exercise-viewer space-y-8 text-gray-100 max-w-4xl mx-auto">
+  <div class="exercise-viewer space-y-8 text-slate-800 max-w-4xl mx-auto">
     <div v-for="(item, idx) in exerciseState" :key="item.id || idx" class="animate-fade-in-up" :style="{ animationDelay: `${idx * 50}ms` }">
       
       <!-- Plain Text / Markdown -->
       <div v-if="item.type === 'text'" 
-           class="prose prose-invert max-w-none prose-p:text-gray-100 prose-p:font-medium prose-headings:text-emerald-400 prose-headings:font-black prose-code:text-emerald-300 prose-code:font-bold prose-code:bg-emerald-950/30 prose-code:px-2 prose-code:py-0.5 prose-code:rounded-md prose-strong:text-white prose-strong:font-black mb-6">
+           class="prose prose-slate max-w-none prose-lg prose-p:text-slate-700 prose-p:font-normal prose-li:text-slate-700 prose-li:font-normal prose-headings:text-emerald-700 prose-headings:font-bold prose-code:text-emerald-700 prose-code:font-semibold prose-code:bg-emerald-50 prose-code:px-2 prose-code:py-0.5 prose-code:rounded-md prose-strong:text-slate-900 prose-strong:font-bold mb-6">
         <div v-html="renderMarkdown(item.content)"></div>
       </div>
       
       <!-- Standalone Checkbox (Knowledge Check) -->
       <div v-else-if="item.type === 'checkbox'" 
-           class="group relative overflow-hidden rounded-2xl border transition-all duration-300 cursor-pointer"
+           class="group relative overflow-hidden rounded-2xl border transition-all duration-300 cursor-pointer bg-white shadow-sm hover:shadow-md"
            :class="getStatusClass(item.status)"
            @click="toggleStandalone(item)">
         
         <!-- Hover Gradient -->
-        <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/5 to-emerald-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-100/30 to-emerald-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
 
         <div class="relative flex items-center gap-5 p-5">
           <div class="flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-300"
-               :class="item.model ? 'bg-emerald-500 border-emerald-500 scale-110 shadow-lg shadow-emerald-500/30' : 'border-gray-500 bg-gray-900/50 group-hover:border-emerald-400'">
+               :class="item.model ? 'bg-emerald-500 border-emerald-500 scale-110 shadow-lg shadow-emerald-500/30' : 'border-slate-300 bg-slate-50 group-hover:border-emerald-400'">
             <svg v-if="item.model" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <span class="font-bold text-lg select-none" :class="item.model ? 'text-white' : 'text-gray-200 group-hover:text-white'">{{ item.text }}</span>
+          <span class="font-medium text-lg select-none" :class="item.model ? 'text-slate-900' : 'text-slate-600 group-hover:text-slate-900'">{{ item.text }}</span>
         </div>
       </div>
 
       <!-- Text Input Question -->
       <div v-else-if="item.type === 'input'" 
-           class="relative p-1 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-800 shadow-xl">
-        <div class="bg-gray-900 rounded-xl p-6 relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+           class="relative p-1 rounded-2xl bg-gradient-to-br from-slate-200 to-slate-300 shadow-lg">
+        <div class="bg-white rounded-xl p-6 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
           
-          <label class="block font-black text-xl text-blue-400 mb-4 flex items-center gap-2">
+          <label class="block font-bold text-xl text-blue-600 mb-4 flex items-center gap-2">
             <span class="text-2xl">⚡</span> {{ item.label }}
           </label>
           
           <div class="relative group">
             <input type="text" v-model="item.model" 
-                   class="w-full pl-5 pr-12 py-4 bg-gray-800/50 text-white rounded-xl border-2 border-gray-700 outline-none transition-all duration-300
-                          focus:border-blue-500 focus:bg-gray-800 focus:shadow-[0_0_20px_rgba(59,130,246,0.15)]
-                          placeholder:text-gray-400 text-lg font-bold font-mono"
-                   :class="item.status === 'correct' ? '!border-emerald-500 !bg-emerald-950/10' : ''"
+                   class="w-full pl-5 pr-12 py-4 bg-slate-50 text-slate-900 rounded-xl border-2 border-slate-200 outline-none transition-all duration-300
+                          focus:border-blue-500 focus:bg-white focus:shadow-[0_0_20px_rgba(59,130,246,0.1)]
+                          placeholder:text-slate-400 text-lg font-medium font-mono"
+                   :class="item.status === 'correct' ? '!border-emerald-500 !bg-emerald-50/20' : ''"
                    placeholder="Type your answer..."
                    @input="validateItem(item)">
             
             <!-- Status Icon -->
             <div class="absolute right-4 top-1/2 -translate-y-1/2 transition-all duration-300 scale-0 opacity-0"
                  :class="item.status === 'correct' ? 'scale-100 opacity-100' : ''">
-              <div class="bg-emerald-500 rounded-full p-1 shadow-lg shadow-emerald-500/40">
+              <div class="bg-emerald-500 rounded-full p-1 shadow-lg shadow-emerald-500/20">
                 <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
@@ -62,12 +62,12 @@
 
       <!-- Grouped Question (Multiple Choice) -->
       <div v-else-if="item.type === 'group'" 
-           class="rounded-2xl border border-gray-700 bg-gray-900/80 backdrop-blur-sm overflow-hidden shadow-2xl">
+           class="rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
         
         <!-- Header -->
-        <div class="bg-white/5 p-6 border-b border-white/5 flex flex-wrap items-center justify-between gap-4">
-          <p class="font-black text-xl text-indigo-300 leading-snug">{{ item.label }}</p>
-          <span class="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-indigo-500/30 text-indigo-300 bg-indigo-500/10">
+        <div class="bg-slate-50 p-6 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4">
+          <p class="font-bold text-xl text-indigo-700 leading-snug">{{ item.label }}</p>
+          <span class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-indigo-200 text-indigo-600 bg-indigo-50">
             {{ item.selection === 'single' ? 'Pick one' : 'Select all that apply' }}
           </span>
         </div>
@@ -82,7 +82,7 @@
             <div class="flex-shrink-0 w-6 h-6 flex items-center justify-center border-2 transition-all duration-300"
                  :class="[
                    item.selection === 'single' ? 'rounded-full' : 'rounded-lg',
-                   opt.model ? 'bg-indigo-500 border-indigo-500 shadow-md shadow-indigo-500/20' : 'border-gray-600 bg-gray-800/50 group-hover:border-indigo-400'
+                   opt.model ? 'bg-indigo-500 border-indigo-500 shadow-md shadow-indigo-500/20' : 'border-slate-300 bg-slate-50 group-hover:border-indigo-400'
                  ]">
               <div v-if="opt.model" 
                    class="transition-transform duration-300"
@@ -93,14 +93,14 @@
               </div>
             </div>
             
-            <span class="flex-grow text-lg font-bold transition-colors" :class="opt.model ? 'text-white' : 'text-gray-300 group-hover:text-gray-100'">
+            <span class="flex-grow text-lg font-medium transition-colors" :class="opt.model ? 'text-indigo-900' : 'text-slate-600 group-hover:text-slate-900'">
               {{ opt.text }}
             </span>
 
             <!-- Correct/Incorrect Indicator (only show if group is validated) -->
             <div v-if="item.status !== 'pending' && opt.model" class="absolute right-4">
-               <span v-if="opt.model === opt.correct" class="text-xs font-black text-emerald-400 bg-emerald-950/50 px-2 py-1 rounded border border-emerald-500/30">CORRECT</span>
-               <span v-else class="text-xs font-black text-rose-400 bg-rose-950/50 px-2 py-1 rounded border border-rose-500/30">WRONG</span>
+               <span v-if="opt.model === opt.correct" class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">CORRECT</span>
+               <span v-else class="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded border border-rose-200">WRONG</span>
             </div>
           </div>
         </div>
@@ -261,19 +261,19 @@ const validateGroup = (group: any) => {
 };
 
 const getStatusClass = (status: string) => {
-  if (status === 'correct') return 'bg-emerald-950/30 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]';
-  // Incorrect state isn't visually punished for checkboxes, just default back
-  return 'bg-gray-800/40 border-gray-700 hover:border-gray-500 hover:bg-gray-800/60';
+  if (status === 'correct') return 'bg-emerald-50/50 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500/20';
+  // Default state for light mode
+  return 'bg-white border-slate-200 hover:border-slate-400 hover:bg-slate-50';
 };
 
 const getOptionClass = (opt: any, group: any) => {
-  if (!opt.model) return 'bg-gray-800/30 border-gray-700/50 text-gray-400 hover:bg-gray-800/60 hover:border-gray-500';
+  if (!opt.model) return 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-400 hover:text-slate-800';
   
   // Highlight based on group status (only if user made a choice)
-  if (group.status === 'correct') return 'bg-emerald-950/40 border-emerald-500/50 shadow-inner';
-  if (group.status === 'incorrect') return 'bg-rose-950/30 border-rose-500/50 shadow-inner';
+  if (group.status === 'correct') return 'bg-emerald-50 border-emerald-500 shadow-sm text-emerald-900';
+  if (group.status === 'incorrect') return 'bg-rose-50 border-rose-500 shadow-sm text-rose-900';
   
-  return 'bg-indigo-900/40 border-indigo-500/50';
+  return 'bg-indigo-50 border-indigo-500 text-indigo-900 ring-1 ring-indigo-500/20';
 };
 
 const isReady = computed(() => {
