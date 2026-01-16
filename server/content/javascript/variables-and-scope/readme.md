@@ -1,22 +1,72 @@
-# Variables and Scope
+# JavaScript Variables & Scope
 
-In JavaScript, how you declare a variable determines its scope and whether it can be reassigned.
+In JavaScript, how you declare a variable determines its **visibility** (Scope) and **lifetime**. Understanding this is critical for avoiding bugs like memory leaks and naming collisions.
 
-## var, let, and const
-- `const`: Block-scoped. Cannot be reassigned.
-- `let`: Block-scoped. Can be reassigned.
-- `var`: Function-scoped. Can be hoisted. (Avoid in modern code!)
+## 1. Scope Types
 
-## Scoping
-Variables defined inside a function or a block `{ }` are only accessible there.
+### Global Scope
+Variables declared outside any function or block. Available everywhere.
+
+### Function Scope
+Variables declared with `var` inside a function are scoped to that function.
+
+### Block Scope (Modern JS)
+Variables declared with `let` and `const` inside `{}` (blocks) are scoped to that block.
+
+---
+
+## 2. Implementation vs Result
+
+### Scenario A: `var` Function Scoping
+```javascript
+function testVar() {
+  if (true) {
+    var x = "I am var";
+  }
+  console.log(x); // Works! var ignores blocks
+}
+testVar();
+```
+**Result:**
+```text
+I am var
+```
+
+### Scenario B: `let` Block Scoping
+```javascript
+function testLet() {
+  if (true) {
+    let y = "I am let";
+  }
+  console.log(y); // ReferenceError! let stays in the block
+}
+testLet();
+```
+**Result:**
+```text
+ReferenceError: y is not defined
+```
+
+---
+
+## 3. Hoisting Visualization
+
+Hoisting is JavaScript's default behavior of moving declarations to the top.
 
 ```javascript
-const name = "Alice"; // Global or outer scope
+console.log(myVar); // undefined (not error!)
+var myVar = 10;
 
-if (true) {
-  let age = 25; // Block scoped
-  console.log(name); // Accessible
-}
-
-// console.log(age); // Error: age is not defined
+console.log(myLet); // Cannot access 'myLet' before initialization
+let myLet = 20;
 ```
+
+---
+
+## 4. Visualizing Scope
+Here is a diagram showing how nested scopes interact:
+
+![JavaScript Scope Diagram](/images/js-scope.png)
+
+> [!TIP]
+> Always prefer `const` by default. Only use `let` if you know the value must change, and avoid `var` in modern development to prevent scoping surprises.

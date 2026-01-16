@@ -1,10 +1,3 @@
-# SEO Meta Tags in Nuxt
-
-Nuxt provides several ways to manage your application's SEO and meta tags.
-
-## useHead
-The `useHead` composable allows you to programmatically set `<head>` tags.
-```javascript
 useHead({
   title: 'My Page Title',
   meta: [

@@ -1,10 +1,3 @@
-# Flexbox Layout
-
-Flexbox is a one-dimensional layout method for arranging items in rows or columns.
-
-## Flex Container Properties
-- `display: flex;`
-- `flex-direction: row | column;`
 - `justify-content`: Aligns items on the main axis (start, center, space-between).
 - `align-items`: Aligns items on the cross axis (stretch, center, baseline).
 

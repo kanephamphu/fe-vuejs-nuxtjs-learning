@@ -1,9 +1,8 @@
-# File-based Routing in Nuxt
+# Nuxt File-based Routing
 
-Nuxt uses a file-based routing system built on top of Vue Router.
+Nuxt eliminates the need for manual router configuration. It automatically generates your application's routes based on the file structure of the `pages/` directory.
 
-## Basic Routes
-The `pages/` directory determines your application routes.
+## 1. Directory Structure Rule
 - `pages/index.vue` -> `/`
 - `pages/about.vue` -> `/about`
 

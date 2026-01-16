@@ -23,5 +23,31 @@ export default defineEventHandler(async (event) => {
     progressMap = progress.reduce((acc, p) => ({ ...acc, [p.lessonId]: p.status }), {});
   }
 
-  return { modules, progress: progressMap };
+  // Calculate statistics
+  const totalLessons = allLessons.length;
+  const completedLessons = Object.values(progressMap).filter(status => status === 'completed').length;
+  const globalPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+  const moduleStats = Object.keys(modules).reduce((acc, modName) => {
+    const modLessons = modules[modName];
+    const total = modLessons.length;
+    const completed = modLessons.filter(l => progressMap[l.id] === 'completed').length;
+    acc[modName] = {
+      total,
+      completed,
+      percentage: total > 0 ? Math.round((completed / total) * 100) : 0
+    };
+    return acc;
+  }, {} as Record<string, { total: number, completed: number, percentage: number }>);
+
+  return { 
+    modules, 
+    progress: progressMap,
+    stats: {
+      totalLessons,
+      completedLessons,
+      globalPercentage,
+      moduleStats
+    }
+  };
 });

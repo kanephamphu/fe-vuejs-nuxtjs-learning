@@ -2,7 +2,8 @@
 const Database = require('better-sqlite3');
 const fs = require('node:fs');
 const path = require('node:path');
-const dbPath = path.join(process.cwd(), 'data.db');
+const dbPath = path.join('d:', 'Project', 'Training', 'VueJS', 'data.db');
+const logPath = path.join('d:', 'Project', 'Training', 'VueJS', 'db_debug.txt');
 const sqlite = new Database(dbPath);
 
 let output = '--- DATABASE DIAGNOSTIC ---\n';
@@ -27,5 +28,5 @@ try {
   output += 'Error: ' + e.message + '\n';
 }
 
-fs.writeFileSync('db_debug.txt', output);
+fs.writeFileSync(logPath, output);
 sqlite.close();

@@ -1,13 +1,7 @@
-# Vue Directives
+# Vue Directives (v-if, v-for, v-model)
 
 Directives are special attributes with the `v-` prefix. They apply special reactive behavior to the rendered DOM.
 
-## Common Directives
-- `v-if`: Conditionally render an element.
-- `v-else` / `v-else-if`: Used with `v-if`.
-- `v-for`: Render a list of items based on an array.
-- `v-bind` (`:`): Dynamically bind an attribute to an expression.
-- `v-on` (`@`): Listen to DOM events.
 - `v-model`: Create two-way data binding on form inputs.
 
 ```html

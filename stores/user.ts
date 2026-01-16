@@ -12,7 +12,8 @@ export const useUserStore = defineStore('user', {
     },
     async fetchUser() {
       try {
-        const { user } = await $fetch('/api/auth/me');
+        const headers = useRequestHeaders(['cookie']);
+        const { user } = await $fetch('/api/auth/me', { headers });
         this.setUser(user);
       } catch (e) {
         this.setUser(null);

@@ -1,10 +1,3 @@
-# Sizing in CSS
-
-Controlling the size of elements is crucial for layout.
-
-## Width and Height
-You can set explicit sizes or use percentages.
-```css
 .card {
   width: 300px;
   height: 200px;

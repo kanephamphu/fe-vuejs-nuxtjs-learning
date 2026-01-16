@@ -1,15 +1,54 @@
-# Reactive Data: ref & reactive
+# Vue Reactive Data: `ref` vs `reactive`
 
-Vue 3 uses the Composition API to define reactive state.
+Vue's reactivity system is powered by JavaScript **Proxies**. It allows Vue to track access and changes to data, automatically updating the DOM when values change.
 
-## ref
-Used for primitive values (string, number, boolean) and can also hold objects. Access via `.value` in logic, but unwrapped in templates.
+## 1. `ref()` vs `reactive()`
+- **`ref()`**: Used for **primitive** values (strings, numbers) or objects. It wraps the value in an object with a `.value` property.
+- **`reactive()`**: Used for **objects and arrays** only. It makes the object itself reactive without using `.value`.
 
-```typescript
+---
+
+## 2. Implementation vs Result
+
+### Scenario A: Working with `ref`
+```vue
+<script setup>
 import { ref } from 'vue';
 const count = ref(0);
-count.value++; // Increment
+const increment = () => count.value++;
+</script>
+
+<template>
+  <button @click="increment">Count is: {{ count }}</button>
+</template>
 ```
+**Result:**
+Initial UI shows `0`. Clicking the button changes it to `1` instantly.
+
+### Scenario B: Working with `reactive`
+```javascript
+import { reactive } from 'vue';
+const state = reactive({ name: 'Vue', age: 3 });
+
+// No .value needed
+state.age = 4;
+```
+**Note:** If you destructure a reactive object (`const { age } = state`), you **lose reactivity**! Use `toRefs()` to fix this.
+
+---
+
+## 3. How it Works (Proxies)
+Vue 3 uses **ES6 Proxies** to "intercept" operations on your data.
+
+![Vue Reactivity Proxy Diagram](/images/vue-reactivity.png)
+
+---
+
+## 4. Why use `ref()` most of the time?
+`ref()` is more flexible because it can hold any data type and is easier to track in your code due to the explicit `.value` requirement in scripts.
+
+> [!TIP]
+> Use `<script setup>` for the most concise and modern Vue development experience. It handles a lot of the boilerplate for you.
 
 ## reactive
 Used only for objects and arrays. No `.value` needed.

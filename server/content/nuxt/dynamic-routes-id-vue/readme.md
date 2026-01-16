@@ -1,10 +1,3 @@
-# Dynamic Routes ([id].vue)
-
-Dynamic routes allow you to create pages that respond to parameters in the URL, such as `/posts/1` or `/users/alice`.
-
-## Syntax
-To create a dynamic route, use square brackets in the filename.
-Example: `pages/users/[id].vue` matches `/users/1`, `/users/abc`, etc.
 
 ## Accessing Parameters
 Use `useRoute().params` to access the value.

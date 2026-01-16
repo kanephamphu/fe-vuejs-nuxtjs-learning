@@ -1,73 +1,111 @@
 <template>
-  <div class="exercise-viewer space-y-6 text-gray-100">
-    <div v-for="(item, idx) in exerciseState" :key="item.id || idx" class="mb-4">
-      <!-- Plain Text / Markdown -->
-      <div v-if="item.type === 'text'" v-html="renderMarkdown(item.content)" class="prose prose-invert max-w-none text-gray-200"></div>
+  <div class="exercise-viewer space-y-8 text-gray-100 max-w-4xl mx-auto">
+    <div v-for="(item, idx) in exerciseState" :key="item.id || idx" class="animate-fade-in-up" :style="{ animationDelay: `${idx * 50}ms` }">
       
-      <!-- Standalone Checkbox -->
+      <!-- Plain Text / Markdown -->
+      <div v-if="item.type === 'text'" 
+           class="prose prose-invert max-w-none prose-p:text-gray-300 prose-headings:text-emerald-400 prose-code:text-emerald-300 prose-code:bg-emerald-950/30 prose-code:px-2 prose-code:py-0.5 prose-code:rounded-md prose-strong:text-white mb-6">
+        <div v-html="renderMarkdown(item.content)"></div>
+      </div>
+      
+      <!-- Standalone Checkbox (Knowledge Check) -->
       <div v-else-if="item.type === 'checkbox'" 
-           class="flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer hover:bg-white/10 active:scale-[0.99]"
+           class="group relative overflow-hidden rounded-2xl border transition-all duration-300 cursor-pointer"
            :class="getStatusClass(item.status)"
            @click="toggleStandalone(item)">
-        <div class="flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all duration-200"
-             :class="item.model ? 'bg-blue-500 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'border-gray-400 bg-gray-800'">
-          <svg v-if="item.model" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7" />
-          </svg>
+        
+        <!-- Hover Gradient -->
+        <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/5 to-emerald-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+
+        <div class="relative flex items-center gap-5 p-5">
+          <div class="flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-300"
+               :class="item.model ? 'bg-emerald-500 border-emerald-500 scale-110 shadow-lg shadow-emerald-500/30' : 'border-gray-500 bg-gray-900/50 group-hover:border-emerald-400'">
+            <svg v-if="item.model" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <span class="font-medium text-lg select-none" :class="item.model ? 'text-white' : 'text-gray-300 group-hover:text-white'">{{ item.text }}</span>
         </div>
-        <label class="cursor-pointer flex-grow font-semibold text-lg">{{ item.text }}</label>
       </div>
 
       <!-- Text Input Question -->
       <div v-else-if="item.type === 'input'" 
-           class="p-6 rounded-xl border-2 transition-all duration-200 space-y-4 bg-gray-900 shadow-xl"
-           :class="getStatusClass(item.status)">
-        <p class="font-bold text-xl text-white">{{ item.label }}</p>
-        <div class="relative">
-          <input type="text" v-model="item.model" 
-                 class="w-full p-4 bg-gray-800 text-white rounded-lg border-2 border-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 outline-none transition-all placeholder:text-gray-500 text-lg"
-                 placeholder="Type your answer here..."
-                 @input="validateItem(item)">
-          <div v-if="item.status === 'correct'" class="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400 drop-shadow-[0_0_5px_rgba(52,211,153,0.5)]">
-            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+           class="relative p-1 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-800 shadow-xl">
+        <div class="bg-gray-900 rounded-xl p-6 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+          
+          <label class="block font-bold text-xl text-blue-400 mb-4 flex items-center gap-2">
+            <span class="text-2xl">⚡</span> {{ item.label }}
+          </label>
+          
+          <div class="relative group">
+            <input type="text" v-model="item.model" 
+                   class="w-full pl-5 pr-12 py-4 bg-gray-800/50 text-white rounded-xl border-2 border-gray-700 outline-none transition-all duration-300
+                          focus:border-blue-500 focus:bg-gray-800 focus:shadow-[0_0_20px_rgba(59,130,246,0.15)]
+                          placeholder:text-gray-600 text-lg font-mono"
+                   :class="item.status === 'correct' ? '!border-emerald-500 !bg-emerald-950/10' : ''"
+                   placeholder="Type your answer..."
+                   @input="validateItem(item)">
+            
+            <!-- Status Icon -->
+            <div class="absolute right-4 top-1/2 -translate-y-1/2 transition-all duration-300 scale-0 opacity-0"
+                 :class="item.status === 'correct' ? 'scale-100 opacity-100' : ''">
+              <div class="bg-emerald-500 rounded-full p-1 shadow-lg shadow-emerald-500/40">
+                <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Grouped Question (Single/Multiple Choice) -->
+      <!-- Grouped Question (Multiple Choice) -->
       <div v-else-if="item.type === 'group'" 
-           class="p-6 rounded-xl border-2 border-gray-700 bg-gray-900 shadow-2xl space-y-5">
-        <div class="flex items-center justify-between border-b border-gray-800 pb-3">
-          <p class="font-black text-2xl text-blue-400 tracking-tight">{{ item.label }}</p>
-          <span class="text-[10px] font-black uppercase tracking-widest text-white bg-blue-600 px-3 py-1 rounded-full shadow-lg">
-            {{ item.selection === 'single' ? 'Single Choice' : 'Multiple Choice' }}
+           class="rounded-2xl border border-gray-700 bg-gray-900/80 backdrop-blur-sm overflow-hidden shadow-2xl">
+        
+        <!-- Header -->
+        <div class="bg-white/5 p-6 border-b border-white/5 flex flex-wrap items-center justify-between gap-4">
+          <p class="font-bold text-xl text-indigo-300 leading-snug">{{ item.label }}</p>
+          <span class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-indigo-500/30 text-indigo-300 bg-indigo-500/10">
+            {{ item.selection === 'single' ? 'Pick one' : 'Select all that apply' }}
           </span>
         </div>
         
-        <div class="grid gap-3">
+        <!-- Options -->
+        <div class="p-6 grid gap-3">
           <div v-for="opt in item.options" :key="opt.id" 
-               class="flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer select-none group active:scale-[0.98]"
+               class="group relative flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 active:scale-[0.99]"
                :class="getOptionClass(opt, item)"
                @click="selectOption(item, opt)">
             
-            <!-- Visual Indicator (Radio or Checkbox style) -->
-            <div class="flex-shrink-0 w-6 h-6 flex items-center justify-center border-2 transition-all duration-200"
+            <div class="flex-shrink-0 w-6 h-6 flex items-center justify-center border-2 transition-all duration-300"
                  :class="[
-                   item.selection === 'single' ? 'rounded-full' : 'rounded',
-                   opt.model ? 'bg-blue-500 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 'border-gray-500 bg-gray-800 group-hover:border-gray-300'
+                   item.selection === 'single' ? 'rounded-full' : 'rounded-lg',
+                   opt.model ? 'bg-indigo-500 border-indigo-500 shadow-md shadow-indigo-500/20' : 'border-gray-600 bg-gray-800/50 group-hover:border-indigo-400'
                  ]">
               <div v-if="opt.model" 
-                   :class="item.selection === 'single' ? 'w-2.5 h-2.5 rounded-full bg-white shadow-sm' : ''">
-                <svg v-if="item.selection === 'multiple'" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="5" d="M5 13l4 4L19 7" />
+                   class="transition-transform duration-300"
+                   :class="item.selection === 'single' ? 'w-2.5 h-2.5 rounded-full bg-white ring-2 ring-indigo-400/30' : ''">
+                <svg v-if="item.selection === 'multiple'" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             </div>
             
-            <span class="flex-grow font-bold text-lg">{{ opt.text }}</span>
+            <span class="flex-grow text-lg font-medium transition-colors" :class="opt.model ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'">
+              {{ opt.text }}
+            </span>
+
+            <!-- Correct/Incorrect Indicator (only show if group is validated) -->
+            <div v-if="item.status !== 'pending' && opt.model" class="absolute right-4">
+               <span v-if="opt.model === opt.correct" class="text-xs font-bold text-emerald-400 bg-emerald-950/50 px-2 py-1 rounded border border-emerald-500/30">CORRECT</span>
+               <span v-else class="text-xs font-bold text-rose-400 bg-rose-950/50 px-2 py-1 rounded border border-rose-500/30">WRONG</span>
+            </div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -102,7 +140,6 @@ const parsedElements = computed(() => {
         finalizeGroup(currentGroup, elements);
         currentGroup = null;
       }
-      elements.push({ type: 'text', content: '' });
       return;
     }
 
@@ -124,18 +161,21 @@ const parsedElements = computed(() => {
     // Grouped question start: ? Question
     const questionMatch = line.match(/^\?\s+(.+)/);
     if (questionMatch) {
+      // If we see a new question starter (?), check if it really is a new group or just a text line
+      // Since inputMatch handled the '! Answer' case, this must be a multiple choice start
       if (currentGroup) { finalizeGroup(currentGroup, elements); }
       currentGroup = {
         type: 'group',
         id: `gr-${index}`,
         label: questionMatch[1].trim(),
         options: [],
-        selection: 'single' // default
+        selection: 'single', // default
+        status: 'pending'
       };
       return;
     }
 
-    // Checkbox: - [ ] text or - [x] text
+    // Checkbox inside group or standalone: - [ ] text
     const checkboxMatch = line.match(/^-\s+\[( |x)\]\s+(.+)/i);
     if (checkboxMatch) {
       const isCorrectOption = checkboxMatch[1].toLowerCase() === 'x';
@@ -143,21 +183,27 @@ const parsedElements = computed(() => {
         id: `ch-${index}`,
         text: checkboxMatch[2].trim(),
         model: false,
-        correct: isCorrectOption,
-        status: 'pending'
+        correct: isCorrectOption
       };
 
       if (currentGroup) {
         currentGroup.options.push(option);
       } else {
-        elements.push({ type: 'checkbox', ...option });
+        elements.push({ type: 'checkbox', ...option, status: 'pending' });
       }
       return;
     }
 
     // Normal text
     if (currentGroup) { finalizeGroup(currentGroup, elements); currentGroup = null; }
-    elements.push({ type: 'text', content: line });
+    
+    // Merge consecutive text blocks to avoid spacing issues
+    const lastElement = elements[elements.length - 1];
+    if (lastElement && lastElement.type === 'text') {
+        lastElement.content += '\n' + line;
+    } else {
+        elements.push({ type: 'text', content: line });
+    }
   });
 
   if (currentGroup) { finalizeGroup(currentGroup, elements); }
@@ -172,6 +218,7 @@ const finalizeGroup = (group: any, elements: any[]) => {
 
 const exerciseState = ref<any[]>([]);
 
+// Reset state when instructions change
 watch(parsedElements, (newElements) => {
   exerciseState.value = JSON.parse(JSON.stringify(newElements));
 }, { immediate: true });
@@ -209,24 +256,24 @@ const validateGroup = (group: any) => {
   const isCorrect = group.options.every((opt: any) => opt.model === opt.correct);
   group.status = isCorrect ? 'correct' : 'incorrect';
   
-  // Also check if completely unselected
   const noneSelected = group.options.every((opt: any) => !opt.model);
   if (noneSelected) group.status = 'pending';
 };
 
 const getStatusClass = (status: string) => {
-  if (status === 'correct') return 'bg-emerald-950/40 border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(52,211,153,0.1)]';
-  if (status === 'incorrect') return 'bg-rose-950/40 border-rose-400 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.1)]';
-  return 'bg-gray-900 border-gray-700 text-gray-300';
+  if (status === 'correct') return 'bg-emerald-950/30 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]';
+  // Incorrect state isn't visually punished for checkboxes, just default back
+  return 'bg-gray-800/40 border-gray-700 hover:border-gray-500 hover:bg-gray-800/60';
 };
 
 const getOptionClass = (opt: any, group: any) => {
-  if (!opt.model) return 'bg-gray-800/50 border-gray-700 text-gray-400 hover:border-gray-500 hover:text-white';
+  if (!opt.model) return 'bg-gray-800/30 border-gray-700/50 text-gray-400 hover:bg-gray-800/60 hover:border-gray-500';
   
-  if (group.status === 'correct') return 'bg-emerald-900/40 border-emerald-500 text-emerald-300 font-black';
-  if (group.status === 'incorrect') return 'bg-blue-900/40 border-blue-500 text-blue-100 font-black';
+  // Highlight based on group status (only if user made a choice)
+  if (group.status === 'correct') return 'bg-emerald-950/40 border-emerald-500/50 shadow-inner';
+  if (group.status === 'incorrect') return 'bg-rose-950/30 border-rose-500/50 shadow-inner';
   
-  return 'bg-blue-900/40 border-blue-500 text-blue-100 font-black';
+  return 'bg-indigo-900/40 border-indigo-500/50';
 };
 
 const isReady = computed(() => {
@@ -241,3 +288,18 @@ watch(isReady, (val) => {
   emit('update:completed', val);
 }, { immediate: true });
 </script>
+
+<style scoped>
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>

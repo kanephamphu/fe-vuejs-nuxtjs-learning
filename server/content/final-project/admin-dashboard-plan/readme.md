@@ -1,22 +1,31 @@
-# Admin Dashboard Plan (Day 10)
+# Final Project: The Platform Admin Dashboard
 
-Welcome to the Final Project! Over the next 3 days, you will build a professional Admin Dashboard using everything you've learned.
+Congratulations! You have reached the final stage. Instead of building a generic "To-Do App" or "Weather Widget", you are going to build **The Management Interface for this very Learning Platform**.
 
-## Project Vision
-A data-driven dashboard that allows an admin to:
-- View user statistics.
-- Manage products/content.
-- Toggle application settings.
+## 1. The Scenario
+You have been hired as the Lead Frontend Engineer for "CodeMastery". The CEO needs a dashboard to track how students are performing in the JavaScript, Vue, and Nuxt courses.
 
-## Technical Stack
-- **Framework**: Nuxt 3
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **State Management**: Pinia
-- **Icons**: Lucide or Nuxt UI Icons
+## 2. Core Requirements
+Your dashboard must include the following features:
 
-## Day 10 Objectives
-1. Define the UI layout (Sidebar + Header + Content Area).
-2. Set up the Pinia store for global state.
-3. Design the database schema/models (even if mock for now).
-4. Create the main landing page with mock stats.
+### A. The "Command Center" (Home)
+- **KPI Cards**: Display Total Students, Total Lessons Completed, and Average Score.
+- **Activity Feed**: A list of the most recent lessons completed by any user.
+
+### B. User Management Table
+- **Data Table**: A searchable, sortable list of all registered users.
+- **Status Indicators**: Visual tags for "Active", "Idle", or "Completed".
+- **Actions**: A "View Details" button for each user.
+
+### C. Student Detail View
+- **Progress Visualization**: A heatmap or chart showing this specific student's progress across modules.
+- **Certificate Status**: A dynamic badge that unlocks when progress hits 100%.
+
+## 3. Technical Stack (The "Premium" Touch)
+- **Nuxt 3**: For SSR and file-based routing.
+- **Tailwind CSS**: For a completely custom, responsive design (Dark Mode required!).
+- **Pinia**: To manage the global admin state (e.g., current selected user).
+- **Chart.js** (or similar): To render the progress bars and analytics.
+
+> [!IMPORTANT]
+> This project is your portfolio piece. Treat it like a real job assignment. Focus on **Clean Code**, **Component Reusability**, and **Pixel-Perfect Design**.

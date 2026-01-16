@@ -201,16 +201,18 @@ async function markProgress(type: 'practice' | 'exercise') {
     if (type === 'practice') {
       alert('Practice marked as done! Now complete the exercise to finish the lesson.');
     } else {
-      if (lesson.value?.progress?.practiceCompleted) {
-        alert('Lesson completed! 🎉');
-        navigateTo('/dashboard');
-      } else {
-        alert('Exercise submitted! Don\'t forget to complete the practice session as well.');
-      }
+      // SUCCESS: Automatic redirection
+      alert('Lesson completed! 🎉 Returning to dashboard...');
+      navigateTo('/dashboard');
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to update progress:', error);
-    alert('Failed to save progress. Please try again.');
+    if (error.statusCode === 401 || error.statusMessage?.includes('session')) {
+      alert('Your session has expired. Please log in again.');
+      navigateTo('/login');
+    } else {
+      alert(`Failed to save progress: ${error.statusMessage || 'Unknown error'}. Please try refreshing the page.`);
+    }
   }
 }
 </script>

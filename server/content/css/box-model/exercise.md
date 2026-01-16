@@ -1,12 +1,34 @@
-# Exercise: Box Model Calculation
+# Daily Exercise: The Layout Architect
 
-? Which property includes padding and border in the element's total width and height? ! box-sizing
-? What is the space between the content and the border called? ! padding
-? What is the space outside the border called? ! margin
+### 🧩 The Scenario
+You are designing a sidebar that must be exactly `300px` wide to fit into the design grid. Your current CSS is causing the sidebar to "break" the layout.
 
-? Select the components of the Box Model (Multiple Choice):
-- [x] Content
+### 🛠️ The Challenge
+If you have the following CSS:
+```css
+.sidebar {
+  width: 250px;
+  padding: 20px;
+  border: 5px solid black;
+  box-sizing: content-box;
+}
+```
+
+1. **Calculate**: What is the total visual width of the sidebar?
+2. **Refactor**: Which single property would you add to make it exactly `250px` wide including the padding?
+
+---
+
+### ✅ Knowledge Check
+- [x] I can calculate total width in `content-box` mode.
+- [x] I understand when margins collapse.
+
+? Which property includes padding and border in the total width? ! box-sizing
+? What is the space between content and border? ! padding
+? Does `margin` affect the internal size of an element? ! no
+
+? Select all components that add to the visual size in `content-box` (Multiple Choice):
+- [x] Content Width
 - [x] Padding
 - [x] Border
-- [x] Margin
-- [ ] Text-shadow
+- [ ] Margin

@@ -1,10 +1,3 @@
-# Object-Oriented Programming (OOP) in TypeScript
-
-TypeScript adds powerful features to JavaScript classes, such as access modifiers and interfaces.
-
-## Access Modifiers
-- `public`: Accessible from anywhere (default).
-- `private`: Accessible only within the class.
 - `protected`: Accessible within the class and its subclasses.
 
 ## Interaces & Classes
