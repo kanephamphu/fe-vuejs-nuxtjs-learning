@@ -30,12 +30,33 @@
               <div class="prose prose-emerald max-w-none" v-html="renderedContent"></div>
             </div>
 
-            <div v-else-if="currentTab === 'Practice'" class="h-full">
+            <div v-else-if="currentTab === 'Practice'" class="h-full flex flex-col">
               <h2 class="text-xl font-bold mb-4">Practice Area</h2>
-              <div class="bg-slate-900 text-slate-300 p-4 rounded-xl font-mono text-sm h-96">
-                {{ lesson.exercise?.starterCode || '// No practice code available' }}
+              <div class="flex-1 border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <VueMonacoEditor
+                  v-model:value="code"
+                  theme="vs-dark"
+                  :options="{
+                    automaticLayout: true,
+                    minimap: { enabled: false },
+                    fontSize: 14,
+                    scrollBeyondLastLine: false
+                  }"
+                  language="javascript"
+                  class="h-full w-full"
+                />
               </div>
-              <p class="mt-4 text-slate-500 text-sm">Interactive editor would go here.</p>
+              <div class="mt-4 flex flex-col gap-4">
+                 <div class="flex justify-between items-center">
+                    <p class="text-slate-500 text-sm">Write your code above and click Run.</p>
+                    <button @click="runCode" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-700 transition-colors">
+                      Run Code
+                    </button>
+                 </div>
+                 <div v-if="output" class="bg-black text-green-400 font-mono text-sm p-4 rounded-xl whitespace-pre-wrap font-bold border-l-4 border-green-500">
+                    {{ output }}
+                 </div>
+              </div>
             </div>
 
             <div v-else-if="currentTab === 'Exercise'">
@@ -60,6 +81,7 @@
 
 <script setup lang="ts">
 import MarkdownIt from 'markdown-it';
+import { VueMonacoEditor } from '@guolao/vue-monaco-editor';
 
 const route = useRoute();
 const currentTab = ref('Definition');
@@ -67,20 +89,62 @@ const tabs = ['Definition', 'Practice', 'Exercise'];
 
 const { data: lesson } = await useFetch(`/api/lessons/${route.params.slug}`);
 
+const code = ref(lesson.value?.exercise?.starterCode || '// Write your code here');
+
+// Watch for lesson changes to update starter code
+watch(() => lesson.value, (newLesson) => {
+  if (newLesson?.exercise?.starterCode) {
+    code.value = newLesson.exercise.starterCode;
+  }
+});
+
 const md = new MarkdownIt();
 const renderedContent = computed(() => {
   return lesson.value?.content ? md.render(lesson.value.content) : '';
 });
 
+const output = ref('');
+
+function runCode() {
+  output.value = 'Running...';
+  try {
+    const logs: string[] = [];
+    // Capture console.log
+    const originalLog = console.log;
+    console.log = (...args) => {
+      logs.push(args.map(a => String(a)).join(' '));
+      originalLog(...args);
+    };
+
+    // Execute code (Note: eval is used for demo purposes. In production, use a sandboxed environment)
+    // eslint-disable-next-line no-eval
+    eval(code.value);
+
+    console.log = originalLog;
+    output.value = logs.length > 0 ? logs.join('\n') : 'Code executed successfully (no output).';
+  } catch (err: any) {
+    output.value = `Error: ${err.message}`;
+  }
+}
+
 async function markCompleted() {
-  await $fetch('/api/user/progress', {
-    method: 'POST',
-    body: {
-      lessonId: lesson.value?.id,
-      status: 'completed'
-    }
-  });
-  alert('Lesson completed!');
-  navigateTo('/dashboard');
+  try {
+    await $fetch('/api/user/progress', {
+      method: 'POST',
+      body: {
+        lessonId: lesson.value?.id,
+        status: 'completed'
+      }
+    });
+
+    // Clear cached data to ensure dashboard updates
+    clearNuxtData();
+    
+    alert('Lesson completed! 🎉');
+    navigateTo('/dashboard');
+  } catch (error) {
+    console.error('Failed to mark lesson as completed:', error);
+    alert('Failed to save progress. Please try again.');
+  }
 }
 </script>
