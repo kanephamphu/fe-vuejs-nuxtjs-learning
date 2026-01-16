@@ -70,3 +70,8 @@ Here is a diagram showing how nested scopes interact:
 
 > [!TIP]
 > Always prefer `const` by default. Only use `let` if you know the value must change, and avoid `var` in modern development to prevent scoping surprises.
+
+## 📚 References
+- [MDN: let](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let)
+- [MDN: const](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const)
+- [MDN: var](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var)

@@ -16,3 +16,7 @@ Most layouts start with a container that wraps the content.
 
 ## Modern Layouts
 Today, we primarily use **Flexbox** and **Grid** for complex layouts, but understanding the document flow is essential.
+
+## 📚 References
+- [MDN: Introduction to CSS Layout](https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Introduction)
+- [MDN: Normal Flow](https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Normal_Flow)

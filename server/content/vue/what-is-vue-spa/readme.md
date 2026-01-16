@@ -62,3 +62,12 @@ Instead of reloading the browser for every page change, Vue intercepts navigatio
 <!-- theme: emerald -->
 
 Now that you know the concepts, let's move on to the next lessons to start coding.
+
+---
+
+# References
+## Learn More
+<!-- theme: default -->
+
+- [Vue.js Official Guide](https://vuejs.org/guide/introduction.html)
+- [The Vue Point (Blog)](https://blog.vuejs.org/)

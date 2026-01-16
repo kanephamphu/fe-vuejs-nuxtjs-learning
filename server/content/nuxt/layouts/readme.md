@@ -1,34 +1,50 @@
-# Nuxt Layouts
+# Layouts
 
-Layouts are used to create common UI structures across multiple pages, such as a **Header**, **Footer**, or **Sidebar**. They help you keep your pages clean and DRY (Don't Repeat Yourself).
+Layouts are wrappers around your pages. They allow you to define a common structure (like a Header, Sidebar, and Footer) that can be reused across multiple pages.
 
-## 1. Using Layouts
-- **`default.vue`**: The automatic layout applied to all pages.
-- **Custom Layouts**: Created in the `layouts/` directory and applied on a per-page basis.
+## The Default Layout
+If you create a file named `layouts/default.vue`, it will be used for all pages automatically.
 
----
-
-## 2. Implementation vs Result
-
-### Scenario A: Defining a Default Layout
-**Implementation (`layouts/default.vue`):**
 ```vue
+<!-- layouts/default.vue -->
 <template>
-    <header>My Website</header>
-    <slot /> <!-- Page content will be injected here -->
+  <div class="app-container">
+    <header>My App</header>
+    <main>
+      <slot /> <!-- Page content is injected here -->
+    </main>
     <footer>© 2024</footer>
   </div>
 </template>
 ```
 
 ## Custom Layouts
-You can create multiple layouts in the `layouts/` directory. To use a custom layout on a page, use `definePageMeta`.
+You can create named layouts, e.g., `layouts/auth.vue` for login/signup pages.
+
 ```vue
-<script setup>
+<!-- layouts/auth.vue -->
+<template>
+  <div class="auth-layout bg-gray-100 h-screen flex items-center justify-center">
+    <slot />
+  </div>
+</template>
+```
+
+### Using a Custom Layout
+In your page component, use `definePageMeta`:
+
+```vue
+<!-- pages/login.vue -->
+<script setup lang="ts">
 definePageMeta({
-  layout: 'custom'
+  layout: 'auth'
 })
 </script>
 ```
-# The Slot
-In Nuxt layouts, the `<slot />` component (note: no name) is used as the placeholder where the page content will be rendered.
+
+## Dynamic Layouts
+You can even switch layouts programmatically using `setPageLayout()` if needed, though `definePageMeta` is preferred for static assignments.
+
+## 📚 References
+- [Nuxt Docs: Layouts](https://nuxt.com/docs/guide/directory-structure/layouts)
+- [Nuxt Docs: definePageMeta](https://nuxt.com/docs/api/utils/define-page-meta)

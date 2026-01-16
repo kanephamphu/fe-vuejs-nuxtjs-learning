@@ -56,3 +56,7 @@ Static checking means errors are caught during the **build step**, not at **runt
 
 > [!TIP]
 > Use `interface` for defining object structures and `type` for unions or aliases. Interfaces are generally preferred for public-facing APIs due to better error messages and extensibility.
+
+## 📚 References
+- [TypeScript Handbook: Basic Types](https://www.typescriptlang.org/docs/handbook/2/basic-types.html)
+- [TypeScript Handbook: Interfaces](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#interfaces)
