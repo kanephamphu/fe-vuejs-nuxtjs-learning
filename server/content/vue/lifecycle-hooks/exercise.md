@@ -1,15 +1,11 @@
-# Exercise: Lifecycle Logic
+? Which hook is best for accessing the DOM element immediately after render?
+- [x] onMounted
+- [ ] onCreated
+- [ ] onSetup
 
-- [x] I understand that `mounted` is the right place for API calls.
-- [x] I know how to clean up resources in `unmounted`.
+? What happens if you forget to clean up a setInterval in onUnmounted?
+- [x] Memory leak (timer continues running)
+- [ ] The browser crashes immediately
+- [ ] Vue automatically cleans it up
 
-? Which hook is called when the component is added to the DOM? ! mounted
-? Which hook is used to perform cleanup (e.g., clear intervals)? ! unmounted
-? In Composition API, what is the equivalent of `mounted`? ! onMounted
-
-? Lifecycle phases (Multiple Choice):
-- [X] Creation
-- [X] Mounting
-- [X] Updates
-- [X] Unmounting
-- [ ] Deletion (it's unmounting)
+? Write the code to log 'Bye' when a component is destroyed ! onUnmounted(() => console.log('Bye'))

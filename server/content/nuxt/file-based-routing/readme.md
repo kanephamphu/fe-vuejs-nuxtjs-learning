@@ -1,22 +1,20 @@
-# Nuxt File-based Routing
+# File-based Routing
 
-Nuxt eliminates the need for manual router configuration. It automatically generates your application's routes based on the file structure of the `pages/` directory.
+Nuxt.js automates routing based on the file structure of your `pages/` directory. You don't need a separate router configuration file!
 
-## 1. Directory Structure Rule
+## Basic Routes
 - `pages/index.vue` -> `/`
 - `pages/about.vue` -> `/about`
+- `pages/contact.vue` -> `/contact`
 
 ## Dynamic Routes
-Use brackets in filenames for parameters.
-- `pages/users/[id].vue` -> `/users/123`
+Use square brackets to denote dynamic parameters.
+- `pages/users/[id].vue` -> `/users/1`, `/users/abc`
+- Access the parameter via `useRoute().params.id`.
 
-```vue
-<script setup>
-const route = useRoute();
-console.log(route.params.id);
-</script>
-```
-
-## Navigation
-Use `<NuxtLink>` for client-side navigation.
-`<NuxtLink to="/about">About Us</NuxtLink>`
+## Nested Routes
+Create a folder with the same name as a file to create nested routes.
+- `pages/users.vue` (Parent)
+- `pages/users/index.vue` (Default child)
+- `pages/users/[id].vue` (Dynamic child)
+Inside `users.vue`, you must use `<NuxtPage />` to display the child component.

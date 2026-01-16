@@ -1,14 +1,11 @@
-# Exercise: Route Master
+? Which file corresponds to the root route '/'?
+- [x] pages/index.vue
+- [ ] pages/home.vue
+- [ ] pages/root.vue
 
-- [X] I know that pages go into the `pages/` folder.
-- [X] I can use `useRoute()` to access params.
+? How do you define a dynamic route parameter named 'slug'?
+- [ ] pages/slug.vue
+- [x] pages/[slug].vue
+- [ ] pages/:slug.vue
 
-? Which component is used for navigation in Nuxt? ! NuxtLink
-? If I have `pages/posts/[slug].vue`, what is the parameter name? ! slug
-? Which function returns the current route object? ! useRoute()
-
-? Valid page filenames (Multiple Choice):
-- [X] index.vue
-- [X] [id].vue
-- [X] about/index.vue
-- [ ] index.html
+? access the route parameter 'id' in script setup ! useRoute().params.id

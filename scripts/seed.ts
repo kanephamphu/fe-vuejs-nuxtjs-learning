@@ -112,73 +112,73 @@ async function seed() {
     const allModules = modules;
 
     for (const [moduleName, lessonsList] of Object.entries(allModules)) {
-        for (const lessonData of lessonsList as any[]) {
-            const slug = `${moduleName}-${lessonData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`;
-            const lessonFolder = slug.replace(`${moduleName}-`, '');
-            const lessonPath = path.join(contentDir, moduleName, lessonFolder);
-            const flatFilePath = path.join(contentDir, moduleName, `${lessonFolder}.md`);
-            
-            let content = `# ${lessonData.title}\n\nConcept overview...`;
-            let practiceContent = `## Practice\n\nTry it out!`;
-            let exerciseInstructions = `## Exercise\n\nComplete the challenge.`;
+      for (const lessonData of lessonsList as any[]) {
+        const slug = `${moduleName}-${lessonData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`;
+        const lessonFolder = slug.replace(`${moduleName}-`, '');
+        const lessonPath = path.join(contentDir, moduleName, lessonFolder);
+        const flatFilePath = path.join(contentDir, moduleName, `${lessonFolder}.md`);
 
-            if (fs.existsSync(lessonPath) && fs.lstatSync(lessonPath).isDirectory()) {
-                // Folder structure
-                const readmePath = path.join(lessonPath, 'readme.md');
-                const practicePath = path.join(lessonPath, 'practice.md');
-                const exercisePath = path.join(lessonPath, 'exercise.md');
-                
-                if (fs.existsSync(readmePath)) content = fs.readFileSync(readmePath, 'utf-8');
-                if (fs.existsSync(practicePath)) practiceContent = fs.readFileSync(practicePath, 'utf-8');
-                if (fs.existsSync(exercisePath)) exerciseInstructions = fs.readFileSync(exercisePath, 'utf-8');
-            } else if (fs.existsSync(flatFilePath)) {
-                // Legacy flat file structure
-                content = fs.readFileSync(flatFilePath, 'utf-8');
-            }
-            
-            // Check if lesson exists
-            const existingLesson = db.select().from(lessons).where(eq(lessons.slug, slug)).get();
+        let content = `# ${lessonData.title}\n\nConcept overview...`;
+        let practiceContent = `## Practice\n\nTry it out!`;
+        let exerciseInstructions = `## Exercise\n\nComplete the challenge.`;
 
-            if (existingLesson) {
-                db.update(lessons)
-                    .set({ 
-                        title: lessonData.title,
-                        topic: lessonData.topic,
-                        content: content,
-                        practiceContent: practiceContent,
-                        complexity: lessonData.level // Map module.level to complexity
-                    })
-                    .where(eq(lessons.id, existingLesson.id))
-                    .run();
+        if (fs.existsSync(lessonPath) && fs.lstatSync(lessonPath).isDirectory()) {
+          // Folder structure
+          const readmePath = path.join(lessonPath, 'readme.md');
+          const practicePath = path.join(lessonPath, 'practice.md');
+          const exercisePath = path.join(lessonPath, 'exercise.md');
 
-                db.update(exercises)
-                    .set({
-                        instructions: exerciseInstructions
-                    })
-                    .where(eq(exercises.lessonId, existingLesson.id))
-                    .run();
-                updatedCount++;
-            } else {
-                // Create new lesson
-                const newLesson = db.insert(lessons).values({
-                    module: moduleName,
-                    topic: lessonData.topic,
-                    title: lessonData.title,
-                    slug: slug,
-                    content,
-                    practiceContent,
-                    complexity: lessonData.level // Updated to use the level from the registry
-                }).returning().get();
-
-                 db.insert(exercises).values({
-                    lessonId: newLesson.id,
-                    instructions: exerciseInstructions,
-                    starterCode: `// Starter code for ${lessonData.title}\n`,
-                    solutionCode: `// Solution for ${lessonData.title}`
-                 }).run();
-                createdCount++;
-            }
+          if (fs.existsSync(readmePath)) content = fs.readFileSync(readmePath, 'utf-8');
+          if (fs.existsSync(practicePath)) practiceContent = fs.readFileSync(practicePath, 'utf-8');
+          if (fs.existsSync(exercisePath)) exerciseInstructions = fs.readFileSync(exercisePath, 'utf-8');
+        } else if (fs.existsSync(flatFilePath)) {
+          // Legacy flat file structure
+          content = fs.readFileSync(flatFilePath, 'utf-8');
         }
+
+        // Check if lesson exists
+        const existingLesson = db.select().from(lessons).where(eq(lessons.slug, slug)).get();
+
+        if (existingLesson) {
+          db.update(lessons)
+            .set({
+              title: lessonData.title,
+              topic: lessonData.topic,
+              content: content,
+              practiceContent: practiceContent,
+              complexity: lessonData.level // Map module.level to complexity
+            })
+            .where(eq(lessons.id, existingLesson.id))
+            .run();
+
+          db.update(exercises)
+            .set({
+              instructions: exerciseInstructions
+            })
+            .where(eq(exercises.lessonId, existingLesson.id))
+            .run();
+          updatedCount++;
+        } else {
+          // Create new lesson
+          const newLesson = db.insert(lessons).values({
+            module: moduleName,
+            topic: lessonData.topic,
+            title: lessonData.title,
+            slug: slug,
+            content,
+            practiceContent,
+            complexity: lessonData.level // Updated to use the level from the registry
+          }).returning().get();
+
+          db.insert(exercises).values({
+            lessonId: newLesson.id,
+            instructions: exerciseInstructions,
+            starterCode: `// Starter code for ${lessonData.title}\n`,
+            solutionCode: `// Solution for ${lessonData.title}`
+          }).run();
+          createdCount++;
+        }
+      }
     }
 
     console.log(`Sync complete. Created: ${createdCount}, Updated: ${updatedCount}`);

@@ -1,16 +1,13 @@
-# Exercise: Component Architect
+? Which macro is used to declare props in <script setup>?
+- [x] defineProps()
+- [ ] defineProps
+- [ ] defineComponent()
 
-- [x] I understand that props are for passing data down.
-- [x] I know how to validate prop types.
+? True or False: You can modify a prop directly inside the child component.
+- [ ] True
+- [x] False
 
-? Which keyword is used to define incoming data in a component? ! props
-? Can a child component directly modify a prop? ! No
-? Is data flow via props one-way or two-way? ! one-way
-
-? Valid prop types (Multiple Choice):
-- [X] String
-- [X] Number
-- [X] Boolean
-- [X] Array
-- [X] Object
-- [ ] Interface (not at runtime without TS)
+? Define a prop 'isActive' that is a Boolean and defaults to false ! defineProps({ isActive: { type: Boolean, default: false } })
+- [ ] defineProps(['isActive'])
+- [x] defineProps({ isActive: { type: Boolean, default: false } })
+- [ ] const props = { isActive: false }

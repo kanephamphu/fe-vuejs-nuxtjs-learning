@@ -1,15 +1,11 @@
-# Exercise: Fetch Specialist
+? Which composable is the shortcut for fetching from a URL?
+- [x] useFetch
+- [ ] useAsyncData
+- [ ] $fetch
 
-- [X] I understand that `useFetch` is isomorphic (runs on server and client).
-- [X] I know how to handle loading and error states.
+? How do you prevent fetching from blocking page navigation?
+- [ ] nav: true
+- [x] lazy: true
+- [ ] async: true
 
-? Which property do you check to see if the request is still loading? ! pending
-? What keyword must you use before calling `useFetch` in script setup? ! await
-? Can `useFetch` be used to send POST requests? ! Yes
-
-? Return values of useFetch (Multiple Choice):
-- [X] data
-- [X] pending
-- [X] error
-- [X] refresh
-- [ ] submit
+? Fetch '/api/test' and pick only the 'title' field ! await useFetch('/api/test', { pick: ['title'] })

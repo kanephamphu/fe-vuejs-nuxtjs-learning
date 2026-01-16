@@ -1,63 +1,25 @@
-# Vue Reactive Data: `ref` vs `reactive`
+# Reactive Data in Vue 3
 
-Vue's reactivity system is powered by JavaScript **Proxies**. It allows Vue to track access and changes to data, automatically updating the DOM when values change.
+Reactivity is the core of Vue. It allows us to track changes in our data and update the UI automatically.
 
-## 1. `ref()` vs `reactive()`
-- **`ref()`**: Used for **primitive** values (strings, numbers) or objects. It wraps the value in an object with a `.value` property.
-- **`reactive()`**: Used for **objects and arrays** only. It makes the object itself reactive without using `.value`.
+## `ref()`
+`ref()` is the most common way to declare reactive state. It can hold any value type (primitives, objects, arrays).
+- Access value in JS: `myRef.value`
+- Access value in Template: `{{ myRef }}` (automatically unwrapped)
 
----
+## `reactive()`
+`reactive()` is used for objects and arrays. It returns a deep reactive proxy of the original object.
+- Access property: `state.count`
+- **Limitation**: Can only hold objects (not primitives like string/number).
+- **Limitation**: Replacing the entire object breaks reactivity reference.
 
-## 2. Implementation vs Result
+## Comparison
+| Feature | `ref()` | `reactive()` |
+|---------|---------|--------------|
+| Primitives | ✅ Yes | ❌ No |
+| Objects | ✅ Yes | ✅ Yes |
+| Access | `.value` | Direct |
+| Reassignable | ✅ Yes | ❌ No (props only) |
 
-### Scenario A: Working with `ref`
-```vue
-<script setup>
-import { ref } from 'vue';
-const count = ref(0);
-const increment = () => count.value++;
-</script>
-
-<template>
-  <button @click="increment">Count is: {{ count }}</button>
-</template>
-```
-**Result:**
-Initial UI shows `0`. Clicking the button changes it to `1` instantly.
-
-### Scenario B: Working with `reactive`
-```javascript
-import { reactive } from 'vue';
-const state = reactive({ name: 'Vue', age: 3 });
-
-// No .value needed
-state.age = 4;
-```
-**Note:** If you destructure a reactive object (`const { age } = state`), you **lose reactivity**! Use `toRefs()` to fix this.
-
----
-
-## 3. How it Works (Proxies)
-Vue 3 uses **ES6 Proxies** to "intercept" operations on your data.
-
-![Vue Reactivity Proxy Diagram](/images/vue_reactivity_proxy_diagram_1768556012681.png)
-
----
-
-## 4. Why use `ref()` most of the time?
-`ref()` is more flexible because it can hold any data type and is easier to track in your code due to the explicit `.value` requirement in scripts.
-
-> [!TIP]
-> Use `<script setup>` for the most concise and modern Vue development experience. It handles a lot of the boilerplate for you.
-
-## reactive
-Used only for objects and arrays. No `.value` needed.
-
-```typescript
-import { reactive } from 'vue';
-const user = reactive({
-  name: 'John',
-  age: 30
-});
-user.age++;
-```
+## Best Practice
+It is recommended to use `ref()` by default for most use cases, as it is more flexible and consistent.
