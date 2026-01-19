@@ -23,6 +23,7 @@
         "@guolao/vue-monaco-editor": "^1.5.1"
     },
     "devDependencies": {
+        "@oxc-parser/binding-win32-x64-msvc": "0.102.0",
         "@nuxt/ui": "^2.15.0",
         "@nuxtjs/tailwindcss": "^6.11.4",
         "@pinia/nuxt": "^0.5.1",
