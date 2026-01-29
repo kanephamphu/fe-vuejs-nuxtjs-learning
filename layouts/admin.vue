@@ -11,14 +11,17 @@
 
       <nav class="flex-1 p-4 space-y-2">
         <NuxtLink to="/admin" class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition" active-class="bg-emerald-600 text-white shadow-lg">
-          📊 Command Center
+          Command Center
         </NuxtLink>
         <NuxtLink to="/admin/users" class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition" active-class="bg-emerald-600 text-white shadow-lg">
-          👥 User Management
+          User Management
+        </NuxtLink>
+        <NuxtLink to="/admin/roadmaps" class="block px-4 py-3 rounded-lg hover:bg-gray-700 transition" active-class="bg-emerald-600 text-white shadow-lg">
+          Roadmap Management
         </NuxtLink>
         <div class="pt-4 mt-4 border-t border-gray-700">
           <NuxtLink to="/dashboard" class="block px-4 py-3 text-gray-400 hover:text-white transition">
-            ⬅️ Back to App
+            Back to App
           </NuxtLink>
         </div>
       </nav>
